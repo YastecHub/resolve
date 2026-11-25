@@ -154,9 +154,14 @@ export default function Welcome() {
             <BrandTile size={36} />
             <Wordmark size={22} lowercase />
           </div>
-          <Link to="/design" className="text-small text-text-2 underline-offset-4 hover:underline">
-            Design system
-          </Link>
+          <nav className="flex items-center gap-5 text-small text-text-2">
+            <Link to="/design" className="underline-offset-4 hover:underline">
+              Design system
+            </Link>
+            <Link to="/design#screens" className="underline-offset-4 hover:underline">
+              Screens
+            </Link>
+          </nav>
         </header>
 
         <main className="relative mx-auto grid max-w-6xl gap-10 px-6 pt-10 pb-16 lg:grid-cols-[1fr_auto] lg:items-center lg:pt-20">

@@ -3,6 +3,7 @@ RUN npm install -g pnpm@11.25.0
 WORKDIR /repo
 COPY . .
 RUN pnpm install --frozen-lockfile
+ENV VITE_AUTH_MODE=dev
 RUN pnpm --filter web build:prod
 
 FROM nginx:1.29-alpine
