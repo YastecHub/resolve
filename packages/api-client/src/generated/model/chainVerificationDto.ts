@@ -9,21 +9,15 @@
  * - Success: `{ "success": true, "data": …, "meta": { "requestId", "timestamp" } }`. Paged lists add `page`, `pageSize` and `total` to `meta`.
  * - Failure: `{ "success": false, "error": { "code", "message", "fieldErrors"?, "details"? }, "meta": { "requestId", "timestamp" } }`.
  *
+ * **Auth.** Sign in with `POST /auth/sign-in`, then send `Authorization: Bearer <token>` on every other route except `/health`.
+ *
  * **Money** is integer kobo (`amountMinor`). **Request IDs**: send `x-request-id` to correlate, or one is generated and returned in the same header.
  * OpenAPI spec version: 1.0.0
  */
 
-/**
- * @nullable
- */
-export type DisputeDtoClassifiedType = typeof DisputeDtoClassifiedType[keyof typeof DisputeDtoClassifiedType] | null;
-
-
-export const DisputeDtoClassifiedType = {
-  failed_transfer_debit: 'failed_transfer_debit',
-  duplicate_charge: 'duplicate_charge',
-  unauthorised_payment: 'unauthorised_payment',
-  merchant_non_delivery: 'merchant_non_delivery',
-  legitimate_transaction: 'legitimate_transaction',
-  unknown: 'unknown',
-} as const;
+export interface ChainVerificationDto {
+  valid: boolean;
+  checked: number;
+  /** The first step that fails verification. */
+  brokenAtSeq?: number;
+}

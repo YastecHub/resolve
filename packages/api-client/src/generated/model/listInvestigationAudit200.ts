@@ -9,17 +9,17 @@
  * - Success: `{ "success": true, "data": …, "meta": { "requestId", "timestamp" } }`. Paged lists add `page`, `pageSize` and `total` to `meta`.
  * - Failure: `{ "success": false, "error": { "code", "message", "fieldErrors"?, "details"? }, "meta": { "requestId", "timestamp" } }`.
  *
+ * **Auth.** Sign in with `POST /auth/sign-in`, then send `Authorization: Bearer <token>` on every other route except `/health`.
+ *
  * **Money** is integer kobo (`amountMinor`). **Request IDs**: send `x-request-id` to correlate, or one is generated and returned in the same header.
  * OpenAPI spec version: 1.0.0
  */
+import type { InvestigationAuditDto } from './investigationAuditDto';
+import type { PaginationMetaDto } from './paginationMetaDto';
+import type { ResponseMetaDto } from './responseMetaDto';
 
-/**
- * @nullable
- */
-export type DisputeDtoResolvedBy = typeof DisputeDtoResolvedBy[keyof typeof DisputeDtoResolvedBy] | null;
-
-
-export const DisputeDtoResolvedBy = {
-  agent: 'agent',
-  analyst: 'analyst',
-} as const;
+export type ListInvestigationAudit200 = {
+  success: true;
+  data: InvestigationAuditDto[];
+  meta: ResponseMetaDto & PaginationMetaDto;
+};

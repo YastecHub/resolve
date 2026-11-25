@@ -9,32 +9,29 @@
  * - Success: `{ "success": true, "data": …, "meta": { "requestId", "timestamp" } }`. Paged lists add `page`, `pageSize` and `total` to `meta`.
  * - Failure: `{ "success": false, "error": { "code", "message", "fieldErrors"?, "details"? }, "meta": { "requestId", "timestamp" } }`.
  *
+ * **Auth.** Sign in with `POST /auth/sign-in`, then send `Authorization: Bearer <token>` on every other route except `/health`.
+ *
  * **Money** is integer kobo (`amountMinor`). **Request IDs**: send `x-request-id` to correlate, or one is generated and returned in the same header.
  * OpenAPI spec version: 1.0.0
  */
-import type { DisputeDtoClassifiedType } from './disputeDtoClassifiedType';
-import type { DisputeDtoReasonCode } from './disputeDtoReasonCode';
-import type { DisputeDtoResolutionAction } from './disputeDtoResolutionAction';
-import type { DisputeDtoResolvedBy } from './disputeDtoResolvedBy';
-import type { DisputeDtoStatus } from './disputeDtoStatus';
+import type { TransactionSummaryDtoChannel } from './transactionSummaryDtoChannel';
+import type { TransactionSummaryDtoStatus } from './transactionSummaryDtoStatus';
+import type { TransactionSummaryDtoType } from './transactionSummaryDtoType';
 
-export interface DisputeDto {
+export interface TransactionSummaryDto {
   id: string;
-  transactionId: string;
-  customerId: string;
-  reasonCode: DisputeDtoReasonCode;
-  status: DisputeDtoStatus;
-  /** Disputed amount in kobo (integer). ₦40,000.00 is 4000000. */
+  reference: string;
+  type: TransactionSummaryDtoType;
+  channel: TransactionSummaryDtoChannel;
   amountMinor: number;
-  currency: string;
+  status: TransactionSummaryDtoStatus;
   /** @nullable */
-  classifiedType?: DisputeDtoClassifiedType;
+  merchantName: string | null;
   /** @nullable */
-  resolutionAction?: DisputeDtoResolutionAction;
+  counterpartyName: string | null;
   /** @nullable */
-  resolvedBy?: DisputeDtoResolvedBy;
-  /** Resolution deadline (ISO 8601). */
-  slaDueAt: string;
+  counterpartyBank: string | null;
+  city: string;
+  ipCountry: string;
   createdAt: string;
-  updatedAt: string;
 }
