@@ -6,6 +6,7 @@ import {
   getConfig,
   getDispute,
   getDisputeCaseFile,
+  getDemoEval,
   getDisputeTrace,
   getMe,
   inviteStaff,
@@ -16,6 +17,7 @@ import {
   listStaff,
   overrideDispute,
   retryDispute,
+  submitDemoCases,
   updateStaff,
   verifyDisputeChain,
   getMetrics,
@@ -29,6 +31,8 @@ import {
   type InvestigationAuditDto,
   type AnalystActionDto,
   type CaseFileDto,
+  type EvalDto,
+  type EvalRowDto,
   type DisputeDetailDto,
   type DisputeSummaryDto,
   type InvestigationSummaryDto,
@@ -51,6 +55,7 @@ import type {
   AiProfileKind,
   ClassifiedType,
   DisputeStatus,
+  PolicyDisposition,
   ResolutionAction,
   StaffRole,
 } from '@resolve/shared';
@@ -68,6 +73,8 @@ import type {
   DisputeQuery,
   DisputeSortField,
   DisputeSummary,
+  EvalResponse,
+  EvalRow,
   InviteStaff,
   InvestigationAuditRow,
   InvestigationSummary,
@@ -604,5 +611,42 @@ export function useChangeStatus() {
     mutationFn: async (vars: { id: string; status: 'suspended' | 'active' }) =>
       toStaffMember((await updateStaff(vars.id, { status: vars.status } as UpdateStaffDto)).data),
     onSuccess: after,
+  });
+}
+
+const toEvalRow = (r: EvalRowDto): EvalRow => ({
+  ...r,
+  disputeId: r.disputeId ?? '',
+  status: (r.status ?? 'queued') as DisputeStatus,
+  expectedType: r.expectedType as ClassifiedType,
+  actualType: r.actualType as ClassifiedType | null,
+  expectedDisposition: r.expectedDisposition as PolicyDisposition,
+  actualDisposition: r.actualDisposition as PolicyDisposition | null,
+});
+
+const toEval = (e: EvalDto): EvalResponse => ({
+  rows: e.rows.map(toEvalRow),
+  accuracy: e.accuracy,
+  summary: e.summary,
+});
+
+export function useDemoSubmit() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: { count?: number; all?: boolean }) =>
+      (await submitDemoCases(body)).data,
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: ['disputes'] });
+      void client.invalidateQueries({ queryKey: keys.metrics });
+      void client.invalidateQueries({ queryKey: keys.eval });
+    },
+  });
+}
+
+export function useDemoEval(enabled: boolean) {
+  return useQuery({
+    queryKey: keys.eval,
+    queryFn: async () => toEval((await getDemoEval()).data),
+    enabled,
   });
 }
