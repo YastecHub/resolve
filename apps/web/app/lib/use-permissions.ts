@@ -1,4 +1,4 @@
-import { useMe } from '~/design/screens/data/hooks';
+import { useMe } from '~/api/hooks';
 import { can, type Permission, type StaffRole } from '@resolve/shared';
 
 export function usePermissions() {

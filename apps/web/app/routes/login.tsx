@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { redirect, useLoaderData, useNavigate, useSearchParams } from 'react-router';
 import { APP_NAME } from '@resolve/shared';
-import { fetchMe } from '~/design/screens/data/hooks';
+import { fetchMe, keys, signIn } from '~/api/hooks';
 import { ApiError } from '@resolve/api-client';
-import { keys } from '~/design/screens/data/hooks';
 import { AdireBand } from '~/components/adire';
 import { AppIcon } from '~/components/app-icon';
 import { BrandTile } from '~/components/brand-mark';
@@ -13,7 +12,7 @@ import { Field, Input } from '~/components/ui/field';
 import { paths } from '~/lib/paths';
 import { STAFF_SIGN_IN } from '~/lib/staff-sign-in';
 import { queryClient } from '~/lib/query-client';
-import { clearDevUser, getDevUser, setDevUser } from '~/lib/session';
+import { clearToken, getToken } from '~/lib/session';
 
 export function meta() {
   return [{ title: `Sign in · ${APP_NAME}` }];
@@ -40,13 +39,7 @@ export async function clientLoader({
   const destination = to?.startsWith(paths.dashboard) ? to : paths.dashboard;
 
   if (STAFF_SIGN_IN) {
-    const as = search.get('as');
-    if (as) {
-      setDevUser(as);
-      queryClient.clear();
-      return redirect(destination);
-    }
-    if (getDevUser() && !notice) return redirect(destination);
+    if (getToken() && !notice) return redirect(destination);
     return { problem: null };
   }
 
@@ -78,6 +71,7 @@ export default function Login() {
   const { problem } = useLoaderData<LoaderData>();
   const noticeKey = searchParams.get('notice') ?? problem;
   const notice = noticeKey ? (NOTICES[noticeKey] ?? NOTICES.ended) : null;
+  const [email, setEmail] = useState('');
   const [staffId, setStaffId] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -95,6 +89,10 @@ export default function Login() {
   };
 
   const submitStaff = async () => {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError('Enter your work email.');
+      return;
+    }
     if (!/^\d{4,8}$/.test(staffId.trim())) {
       setError('Enter your staff ID. It is 4 to 8 digits.');
       return;
@@ -102,13 +100,13 @@ export default function Login() {
     setBusy(true);
     setError(null);
     try {
-      setDevUser(staffId);
       queryClient.clear();
+      await signIn(email, staffId);
       const me = await fetchMe();
       queryClient.setQueryData(keys.me, me);
       navigate(paths.dashboard);
     } catch (caught) {
-      clearDevUser();
+      clearToken();
       fail(caught);
       setBusy(false);
     }
@@ -160,7 +158,7 @@ export default function Login() {
               <h1 className="font-display text-lead">Sign in</h1>
               <p className="text-body text-text-2">
                 {STAFF_SIGN_IN
-                  ? 'Use your staff ID to sign in.'
+                  ? 'Use your work email and staff ID to sign in.'
                   : 'You sign in through your bank single sign-on. We then check your access here.'}
               </p>
             </div>
@@ -176,6 +174,21 @@ export default function Login() {
                   void submitStaff();
                 }}
               >
+                <Field label="Work email">
+                  {({ id, describedBy }) => (
+                    <Input
+                      id={id}
+                      aria-describedby={describedBy}
+                      type="email"
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      autoComplete="email"
+                      autoFocus
+                      placeholder="you@yourbank.com"
+                      className="h-11"
+                    />
+                  )}
+                </Field>
                 <Field label="Staff ID" hint="Printed on your staff card.">
                   {({ id, describedBy }) => (
                     <Input
@@ -187,7 +200,6 @@ export default function Login() {
                       }
                       inputMode="numeric"
                       autoComplete="username"
-                      autoFocus
                       placeholder="e.g. 100234"
                       className="tabular h-11"
                     />
@@ -210,18 +222,6 @@ export default function Login() {
               </Button>
             )}
           </div>
-
-          {STAFF_SIGN_IN ? (
-            <div className="rounded-lg border border-dashed border-border-strong p-4 text-small text-text-2">
-              <p className="mb-1 text-caption text-text-3">Seeded staff IDs</p>
-              <p>
-                Staff IDs in the sample team: <span className="font-mono text-text">100234</span>{' '}
-                admin, <span className="font-mono text-text">100871</span> analyst,{' '}
-                <span className="font-mono text-text">102007</span> viewer (invited),{' '}
-                <span className="font-mono text-text">099310</span> suspended.
-              </p>
-            </div>
-          ) : null}
 
           <p className="text-caption text-text-3">
             Need access? Ask your administrator. Activity is logged.
