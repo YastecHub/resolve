@@ -21,3 +21,4 @@ CLAUDE.md
 *.tsbuildinfo
 
 apps/api/src/generated/
+apps/api/.e2e-case-files/

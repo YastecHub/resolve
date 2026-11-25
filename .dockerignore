@@ -11,3 +11,4 @@
 !.env.example
 *.pem
 CLAUDE.md
+**/src/generated

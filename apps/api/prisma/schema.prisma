@@ -150,6 +150,7 @@ enum AccessAction {
   suspended
   reinstated
   first_sign_in
+  demo_reset
 }
 
 model Customer {
