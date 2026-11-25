@@ -1,0 +1,682 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "description": "Checks the API, PostgreSQL and Redis. Returns 200 when everything is up and 503 with the full report in `error.details` when anything is down.",
+        "operationId": "getHealth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Every dependency is up.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/HealthReportDto"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMetaDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "A dependency is down (`service_unavailable`). The report is in `error.details`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Service health",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/api/v1/disputes": {
+      "post": {
+        "description": "Opens a dispute against a transaction and queues it for investigation. One open dispute per transaction.",
+        "operationId": "createDispute",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDisputeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Dispute created and queued.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/DisputeDto"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMetaDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body is invalid (`validation_error`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The transaction does not exist (`not_found`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The transaction already has an open dispute (`conflict`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "File a dispute",
+        "tags": [
+          "disputes"
+        ]
+      },
+      "get": {
+        "description": "Paged list, newest first. Pagination is in `meta`.",
+        "operationId": "listDisputes",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Only disputes in these statuses. Repeat the parameter for several.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "queued",
+                  "investigating",
+                  "awaiting_review",
+                  "resolved",
+                  "rejected",
+                  "escalated",
+                  "failed"
+                ]
+              }
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of disputes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/DisputeDto"
+                      }
+                    },
+                    "meta": {
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/ResponseMetaDto"
+                        },
+                        {
+                          "$ref": "#/components/schemas/PaginationMetaDto"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A query parameter is invalid (`validation_error`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List disputes",
+        "tags": [
+          "disputes"
+        ]
+      }
+    },
+    "/api/v1/disputes/{id}": {
+      "get": {
+        "operationId": "getDispute",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "dsp_01JD8Q5C9V2M4X7P",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The dispute.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/DisputeDto"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMetaDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No dispute with that ID (`not_found`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get a dispute",
+        "tags": [
+          "disputes"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "resolve API",
+    "description": "Dispute investigation for banks: file disputes, follow the agent, act on its recommendations.\n\n**Envelope.** Every response is wrapped.\n\n- Success: `{ \"success\": true, \"data\": …, \"meta\": { \"requestId\", \"timestamp\" } }`. Paged lists add `page`, `pageSize` and `total` to `meta`.\n- Failure: `{ \"success\": false, \"error\": { \"code\", \"message\", \"fieldErrors\"?, \"details\"? }, \"meta\": { \"requestId\", \"timestamp\" } }`.\n\n**Money** is integer kobo (`amountMinor`). **Request IDs**: send `x-request-id` to correlate, or one is generated and returned in the same header.",
+    "version": "1.0.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "components": {
+    "schemas": {
+      "FieldErrorDto": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string",
+            "description": "Path of the invalid field.",
+            "example": "transactionId"
+          },
+          "message": {
+            "type": "string",
+            "description": "What is wrong with it.",
+            "example": "transactionId must be a string"
+          }
+        },
+        "required": [
+          "field",
+          "message"
+        ]
+      },
+      "ErrorBodyDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Stable, machine-readable error code.",
+            "example": "validation_error",
+            "enum": [
+              "validation_error",
+              "unauthorized",
+              "forbidden",
+              "not_found",
+              "conflict",
+              "invalid_state",
+              "rate_limited",
+              "not_implemented",
+              "service_unavailable",
+              "internal_error"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable explanation.",
+            "example": "The request body is invalid."
+          },
+          "fieldErrors": {
+            "description": "Per-field problems, for `validation_error`.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldErrorDto"
+            }
+          },
+          "details": {
+            "type": "object",
+            "description": "Extra structured context about the error.",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ]
+      },
+      "ResponseMetaDto": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "description": "Request ID, echoed in the `x-request-id` header.",
+            "example": "req_8f2c1e5a9b"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "When the response was produced (ISO 8601).",
+            "example": "2026-11-25T10:00:00.000Z"
+          }
+        },
+        "required": [
+          "requestId",
+          "timestamp"
+        ]
+      },
+      "ErrorResponseDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              false
+            ],
+            "example": false
+          },
+          "error": {
+            "$ref": "#/components/schemas/ErrorBodyDto"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMetaDto"
+          }
+        },
+        "required": [
+          "success",
+          "error",
+          "meta"
+        ]
+      },
+      "CheckResultDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "up",
+              "down"
+            ],
+            "example": "up"
+          },
+          "latencyMs": {
+            "type": "number",
+            "description": "How long the check took, in milliseconds.",
+            "example": 3
+          },
+          "error": {
+            "type": "string",
+            "description": "Why the check failed.",
+            "example": "connection refused"
+          }
+        },
+        "required": [
+          "status",
+          "latencyMs"
+        ]
+      },
+      "HealthChecksDto": {
+        "type": "object",
+        "properties": {
+          "api": {
+            "$ref": "#/components/schemas/CheckResultDto"
+          },
+          "database": {
+            "description": "PostgreSQL.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CheckResultDto"
+              }
+            ]
+          },
+          "redis": {
+            "$ref": "#/components/schemas/CheckResultDto"
+          }
+        },
+        "required": [
+          "api",
+          "database",
+          "redis"
+        ]
+      },
+      "HealthReportDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "degraded"
+            ],
+            "example": "ok"
+          },
+          "service": {
+            "type": "string",
+            "example": "resolve-api"
+          },
+          "version": {
+            "type": "string",
+            "description": "Deployed version (commit SHA in production).",
+            "example": "3f9c1a2"
+          },
+          "uptimeSeconds": {
+            "type": "number",
+            "example": 3600
+          },
+          "time": {
+            "type": "string",
+            "example": "2026-11-25T10:00:00.000Z"
+          },
+          "checks": {
+            "$ref": "#/components/schemas/HealthChecksDto"
+          }
+        },
+        "required": [
+          "status",
+          "service",
+          "version",
+          "uptimeSeconds",
+          "time",
+          "checks"
+        ]
+      },
+      "PaginationMetaDto": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "number",
+            "description": "Current page, starting at 1.",
+            "example": 1,
+            "minimum": 1
+          },
+          "pageSize": {
+            "type": "number",
+            "description": "Items per page.",
+            "example": 25,
+            "minimum": 1,
+            "maximum": 100
+          },
+          "total": {
+            "type": "number",
+            "description": "Total items across all pages.",
+            "example": 312,
+            "minimum": 0
+          }
+        },
+        "required": [
+          "page",
+          "pageSize",
+          "total"
+        ]
+      },
+      "DisputeDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "dsp_01JD8Q5C9V2M4X7P"
+          },
+          "transactionId": {
+            "type": "string",
+            "example": "txn_01JD8Q3W4N7Z2R5K"
+          },
+          "customerId": {
+            "type": "string",
+            "example": "cus_01JD7Z0A1B2C3D4E"
+          },
+          "reasonCode": {
+            "type": "string",
+            "enum": [
+              "unauthorised",
+              "duplicate",
+              "failed_transfer",
+              "not_delivered",
+              "other"
+            ],
+            "example": "failed_transfer"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "investigating",
+              "awaiting_review",
+              "resolved",
+              "rejected",
+              "escalated",
+              "failed"
+            ],
+            "example": "queued"
+          },
+          "amountMinor": {
+            "type": "number",
+            "description": "Disputed amount in kobo (integer). ₦40,000.00 is 4000000.",
+            "example": 4000000
+          },
+          "currency": {
+            "type": "string",
+            "example": "NGN"
+          },
+          "classifiedType": {
+            "type": "string",
+            "enum": [
+              "failed_transfer_debit",
+              "duplicate_charge",
+              "unauthorised_payment",
+              "merchant_non_delivery",
+              "legitimate_transaction",
+              "unknown"
+            ],
+            "nullable": true,
+            "example": null
+          },
+          "resolutionAction": {
+            "type": "string",
+            "enum": [
+              "reverse_debit",
+              "refund_duplicate",
+              "none"
+            ],
+            "nullable": true,
+            "example": null
+          },
+          "resolvedBy": {
+            "type": "string",
+            "enum": [
+              "agent",
+              "analyst"
+            ],
+            "nullable": true,
+            "example": null
+          },
+          "slaDueAt": {
+            "type": "string",
+            "description": "Resolution deadline (ISO 8601).",
+            "example": "2026-11-28T10:00:00.000Z"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-11-25T10:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2026-11-25T10:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "transactionId",
+          "customerId",
+          "reasonCode",
+          "status",
+          "amountMinor",
+          "currency",
+          "slaDueAt",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateDisputeDto": {
+        "type": "object",
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "description": "ID of the disputed transaction.",
+            "example": "txn_01JD8Q3W4N7Z2R5K"
+          },
+          "reasonCode": {
+            "type": "string",
+            "enum": [
+              "unauthorised",
+              "duplicate",
+              "failed_transfer",
+              "not_delivered",
+              "other"
+            ],
+            "example": "failed_transfer"
+          },
+          "customerNotes": {
+            "type": "string",
+            "description": "The customer's own words. Treated as untrusted data and never as instructions to the agent.",
+            "example": "I sent 40k to my supplier and he did not get it.",
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "transactionId",
+          "reasonCode"
+        ]
+      }
+    }
+  }
+}
