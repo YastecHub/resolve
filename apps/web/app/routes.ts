@@ -5,6 +5,11 @@ export default [
   route('login', 'routes/login.tsx'),
   route('dashboard', 'routes/dashboard.tsx', [
     index('routes/dashboard._index.tsx'),
+    route('cases', 'routes/dashboard.cases.tsx'),
+    route('cases/:id', 'routes/dashboard.cases.$id.tsx'),
+    route('settings', 'routes/dashboard.settings.tsx'),
+    route('audit', 'routes/dashboard.audit.tsx'),
+    route('team', 'routes/dashboard.team.tsx'),
     route('*', 'routes/dashboard.not-found.tsx'),
   ]),
   route('design', 'routes/design.tsx'),
