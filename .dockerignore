@@ -1,0 +1,13 @@
+**/node_modules
+**/dist
+**/build
+**/.react-router
+**/.turbo
+**/coverage
+.git
+.github
+.env
+.env.*
+!.env.example
+*.pem
+CLAUDE.md
