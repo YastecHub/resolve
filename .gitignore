@@ -19,3 +19,5 @@ coverage/
 
 CLAUDE.md
 *.tsbuildinfo
+
+apps/api/src/generated/

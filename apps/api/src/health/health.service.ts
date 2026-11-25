@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { DatabaseService } from '../infra/database.service.js';
+import { PrismaService } from '../infra/prisma.service.js';
 import { RedisService } from '../infra/redis.service.js';
 import { overallStatus, runCheck, type HealthReport } from './health.status.js';
 
@@ -8,7 +8,7 @@ const CHECK_TIMEOUT_MS = 2_500;
 @Injectable()
 export class HealthService {
   constructor(
-    @Inject(DatabaseService) private readonly database: DatabaseService,
+    @Inject(PrismaService) private readonly database: PrismaService,
     @Inject(RedisService) private readonly redis: RedisService,
   ) {}
 

@@ -3,7 +3,7 @@ import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import type { App } from 'supertest/types.js';
 import { AppModule } from '../src/app.module.js';
-import { DatabaseService } from '../src/infra/database.service.js';
+import { PrismaService } from '../src/infra/prisma.service.js';
 import { RedisService } from '../src/infra/redis.service.js';
 import { configureApp } from '../src/setup.js';
 
@@ -14,7 +14,7 @@ describe('API envelope', () => {
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
-      .overrideProvider(DatabaseService)
+      .overrideProvider(PrismaService)
       .useValue(database)
       .overrideProvider(RedisService)
       .useValue(redis)
