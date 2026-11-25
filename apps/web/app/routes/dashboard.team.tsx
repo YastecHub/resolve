@@ -24,14 +24,8 @@ import { SkeletonTableRows } from '~/components/ui/skeleton';
 import { ROLE_LABELS, ROLE_SUMMARIES } from '~/lib/labels';
 import { usePermissions } from '~/lib/use-permissions';
 import { cn } from '~/lib/cn';
-import {
-  useChangeRole,
-  useChangeStatus,
-  useInviteStaff,
-  useMe,
-  useTeam,
-} from '~/design/screens/data/hooks';
-import type { StaffMember } from '~/design/screens/data/types';
+import { useChangeRole, useChangeStatus, useInviteStaff, useMe, useTeam } from '~/api/hooks';
+import type { StaffMember } from '~/api/types';
 import { ApiError } from '@resolve/api-client';
 
 export function meta() {
