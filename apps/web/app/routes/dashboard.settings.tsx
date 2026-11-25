@@ -25,7 +25,7 @@ import {
   useSaveConfig,
   useSetProfile,
   useTestProfile,
-} from '~/design/screens/data/hooks';
+} from '~/api/hooks';
 import { ApiError } from '@resolve/api-client';
 
 export function meta() {
