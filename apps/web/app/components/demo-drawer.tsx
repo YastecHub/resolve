@@ -5,7 +5,7 @@ import { Button } from '~/components/ui/button';
 import { Sheet } from '~/components/ui/sheet';
 import { TYPE_LABELS } from '~/lib/labels';
 import { formatPercent, shortId } from '~/lib/format';
-import { useDemoEval, useDemoSubmit } from '~/design/screens/data/hooks';
+import { useDemoEval, useDemoSubmit } from '~/api/hooks';
 import { ApiError } from '@resolve/api-client';
 
 function errorText(error: unknown) {
