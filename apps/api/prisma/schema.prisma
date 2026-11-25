@@ -1,0 +1,402 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum CustomerSegment {
+  retail
+  sme
+}
+
+enum RiskLevel {
+  low
+  medium
+  high
+}
+
+enum TransactionType {
+  card_payment
+  transfer
+  pos
+  web
+}
+
+enum Channel {
+  mobile
+  web
+  pos
+  atm
+  ussd
+}
+
+enum TransactionStatus {
+  successful
+  failed
+  pending
+  reversed
+}
+
+enum LedgerEntryType {
+  debit
+  credit
+  reversal
+  refund
+}
+
+enum SettlementStatus {
+  settled
+  failed
+  pending
+  not_applicable
+}
+
+enum DisputeReasonCode {
+  unauthorised
+  duplicate
+  failed_transfer
+  not_delivered
+  other
+}
+
+enum ClassifiedType {
+  failed_transfer_debit
+  duplicate_charge
+  unauthorised_payment
+  merchant_non_delivery
+  legitimate_transaction
+  unknown
+}
+
+enum DisputeStatus {
+  queued
+  investigating
+  awaiting_review
+  resolved
+  rejected
+  escalated
+  failed
+}
+
+enum ResolutionAction {
+  reverse_debit
+  refund_duplicate
+  none
+}
+
+enum Resolver {
+  agent
+  analyst
+}
+
+enum InvestigationStatus {
+  running
+  completed
+  failed
+}
+
+enum AgentOutcome {
+  auto_resolve
+  escalate
+  reject
+}
+
+enum RecommendedAction {
+  reverse_debit
+  refund_duplicate
+  none
+  manual_review
+}
+
+enum PolicyDisposition {
+  auto_resolve
+  needs_review
+}
+
+enum AgentStepKind {
+  model
+  tool
+  system
+}
+
+enum AnalystActionType {
+  approve
+  override
+  escalate
+  edit_message
+  retry
+}
+
+enum StaffRole {
+  admin
+  analyst
+  viewer
+}
+
+enum StaffStatus {
+  invited
+  active
+  suspended
+}
+
+enum AccessAction {
+  invited
+  role_changed
+  suspended
+  reinstated
+  first_sign_in
+}
+
+model Customer {
+  id             String          @id
+  fullName       String          @map("full_name")
+  phoneMasked    String          @map("phone_masked")
+  segment        CustomerSegment
+  accountAgeDays Int             @map("account_age_days")
+  riskProfile    RiskLevel       @map("risk_profile")
+  homeCity       String          @map("home_city")
+  createdAt      DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  devices        Device[]
+  transactions   Transaction[]
+  disputes       Dispute[]
+
+  @@map("customers")
+}
+
+model Merchant {
+  id             String        @id
+  name           String
+  category       String
+  country        String        @default("NG")
+  disputeRateBps Int           @map("dispute_rate_bps")
+  flagged        Boolean       @default(false)
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  transactions   Transaction[]
+
+  @@map("merchants")
+}
+
+model Device {
+  id           String        @id
+  customerId   String        @map("customer_id")
+  fingerprint  String
+  label        String
+  trusted      Boolean
+  firstSeenAt  DateTime      @map("first_seen_at") @db.Timestamptz(3)
+  lastSeenAt   DateTime      @map("last_seen_at") @db.Timestamptz(3)
+  lastCity     String        @map("last_city")
+  customer     Customer      @relation(fields: [customerId], references: [id])
+  transactions Transaction[]
+
+  @@index([customerId])
+  @@map("devices")
+}
+
+model Transaction {
+  id               String            @id
+  reference        String            @unique
+  customerId       String            @map("customer_id")
+  merchantId       String?           @map("merchant_id")
+  counterpartyName String?           @map("counterparty_name")
+  counterpartyBank String?           @map("counterparty_bank")
+  type             TransactionType
+  channel          Channel
+  amountMinor      BigInt            @map("amount_minor")
+  currency         String            @default("NGN")
+  status           TransactionStatus
+  deviceId         String?           @map("device_id")
+  city             String
+  ipCountry        String            @map("ip_country")
+  createdAt        DateTime          @map("created_at") @db.Timestamptz(3)
+  customer         Customer          @relation(fields: [customerId], references: [id])
+  merchant         Merchant?         @relation(fields: [merchantId], references: [id])
+  device           Device?           @relation(fields: [deviceId], references: [id])
+  ledgerEntries    LedgerEntry[]
+  settlement       Settlement?
+  disputes         Dispute[]
+  demoCases        DemoCase[]
+
+  @@index([customerId, createdAt])
+  @@index([merchantId, amountMinor, createdAt])
+  @@map("transactions")
+}
+
+model LedgerEntry {
+  id            String          @id
+  transactionId String          @map("transaction_id")
+  entryType     LedgerEntryType @map("entry_type")
+  accountRef    String          @map("account_ref")
+  amountMinor   BigInt          @map("amount_minor")
+  memo          String
+  postedAt      DateTime        @map("posted_at") @db.Timestamptz(3)
+  transaction   Transaction     @relation(fields: [transactionId], references: [id])
+
+  @@index([transactionId])
+  @@map("ledger_entries")
+}
+
+model Settlement {
+  id            String           @id
+  transactionId String           @unique @map("transaction_id")
+  status        SettlementStatus
+  failureReason String?          @map("failure_reason")
+  settledAt     DateTime?        @map("settled_at") @db.Timestamptz(3)
+  updatedAt     DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
+  transaction   Transaction      @relation(fields: [transactionId], references: [id])
+
+  @@map("settlements")
+}
+
+model Dispute {
+  id                    String            @id
+  transactionId         String            @map("transaction_id")
+  customerId            String            @map("customer_id")
+  reasonCode            DisputeReasonCode @map("reason_code")
+  customerNotes         String?           @map("customer_notes")
+  amountMinor           BigInt            @map("amount_minor")
+  classifiedType        ClassifiedType?   @map("classified_type")
+  status                DisputeStatus     @default(queued)
+  resolutionAction      ResolutionAction? @map("resolution_action")
+  resolvedBy            Resolver?         @map("resolved_by")
+  resolvedAt            DateTime?         @map("resolved_at") @db.Timestamptz(3)
+  lastError             String?           @map("last_error")
+  /// The newest investigation attempt, so lists can filter and sort on it without a subquery.
+  latestInvestigationId String?           @unique @map("latest_investigation_id")
+  slaDueAt              DateTime          @map("sla_due_at") @db.Timestamptz(3)
+  createdAt             DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
+  transaction           Transaction       @relation(fields: [transactionId], references: [id])
+  customer              Customer          @relation(fields: [customerId], references: [id])
+  latestInvestigation   Investigation?    @relation("LatestInvestigation", fields: [latestInvestigationId], references: [id])
+  investigations        Investigation[]   @relation("DisputeInvestigations")
+  analystActions        AnalystAction[]
+
+  @@index([status, createdAt])
+  @@index([slaDueAt])
+  @@index([transactionId])
+  @@map("disputes")
+}
+
+model Investigation {
+  id                String              @id
+  disputeId         String              @map("dispute_id")
+  attempt           Int
+  status            InvestigationStatus @default(running)
+  profile           String
+  providerKind      String?             @map("provider_kind")
+  model             String
+  outcome           AgentOutcome?
+  confidence        Float?
+  riskLevel         RiskLevel?          @map("risk_level")
+  fraudSuspected    Boolean             @default(false) @map("fraud_suspected")
+  classifiedType    ClassifiedType?     @map("classified_type")
+  recommendedAction RecommendedAction?  @map("recommended_action")
+  reasoning         String?
+  evidence          Json?
+  evidenceProblems  Json?               @map("evidence_problems")
+  customerMessage   String?             @map("customer_message")
+  policyDisposition PolicyDisposition?  @map("policy_disposition")
+  policyReasons     Json?               @map("policy_reasons")
+  evidenceValid     Boolean             @default(false) @map("evidence_valid")
+  stepsCount        Int                 @default(0) @map("steps_count")
+  tokensIn          Int                 @default(0) @map("tokens_in")
+  tokensOut         Int                 @default(0) @map("tokens_out")
+  error             String?
+  startedAt         DateTime            @default(now()) @map("started_at") @db.Timestamptz(3)
+  finishedAt        DateTime?           @map("finished_at") @db.Timestamptz(3)
+  dispute           Dispute             @relation("DisputeInvestigations", fields: [disputeId], references: [id])
+  latestFor         Dispute?            @relation("LatestInvestigation")
+  steps             AgentStep[]
+
+  @@unique([disputeId, attempt])
+  @@index([finishedAt])
+  @@map("investigations")
+}
+
+model AgentStep {
+  id              String        @id
+  investigationId String        @map("investigation_id")
+  seq             Int
+  kind            AgentStepKind
+  toolName        String?       @map("tool_name")
+  input           Json
+  output          Json
+  latencyMs       Int           @default(0) @map("latency_ms")
+  prevHash        String        @map("prev_hash")
+  hash            String
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  investigation   Investigation @relation(fields: [investigationId], references: [id])
+
+  @@unique([investigationId, seq])
+  @@map("agent_steps")
+}
+
+model AnalystAction {
+  id             String            @id
+  disputeId      String            @map("dispute_id")
+  actorEmail     String            @map("actor_email")
+  action         AnalystActionType
+  overrideAction ResolutionAction? @map("override_action")
+  reason         String?
+  createdAt      DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  dispute        Dispute           @relation(fields: [disputeId], references: [id])
+
+  @@index([disputeId, createdAt])
+  @@index([createdAt])
+  @@map("analyst_actions")
+}
+
+model Staff {
+  id           String      @id
+  staffId      String      @unique @map("staff_id")
+  name         String
+  email        String      @unique
+  role         StaffRole
+  status       StaffStatus @default(invited)
+  invitedBy    String?     @map("invited_by")
+  createdAt    DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  lastSignInAt DateTime?   @map("last_sign_in_at") @db.Timestamptz(3)
+
+  @@map("staff")
+}
+
+model AccessEvent {
+  id          String       @id
+  actorEmail  String       @map("actor_email")
+  action      AccessAction
+  targetEmail String       @map("target_email")
+  detail      String?
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([createdAt])
+  @@map("access_events")
+}
+
+model Config {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  updatedBy String?  @map("updated_by")
+
+  @@map("config")
+}
+
+model DemoCase {
+  id                     String            @id
+  scenario               String
+  transactionId          String            @map("transaction_id")
+  reasonCode             DisputeReasonCode @map("reason_code")
+  customerNotes          String?           @map("customer_notes")
+  expectedClassifiedType ClassifiedType    @map("expected_classified_type")
+  expectedDisposition    PolicyDisposition @map("expected_disposition")
+  consumedDisputeId      String?           @map("consumed_dispute_id")
+  transaction            Transaction       @relation(fields: [transactionId], references: [id])
+
+  @@index([scenario])
+  @@map("demo_cases")
+}
