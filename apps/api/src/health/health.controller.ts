@@ -1,11 +1,13 @@
 import { Controller, Get, HttpStatus, Inject } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiFailure, ApiSuccess } from '../common/decorators/api-envelope.decorator.js';
+import { Public } from '../auth/auth.decorators.js';
 import { AppException } from '../common/errors/app.exception.js';
 import { HealthReportDto } from './dto/health.dto.js';
 import { HealthService } from './health.service.js';
 
 @ApiTags('health')
+@Public()
 @Controller('health')
 export class HealthController {
   constructor(@Inject(HealthService) private readonly health: HealthService) {}
