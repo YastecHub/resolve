@@ -11,4 +11,4 @@
 !.env.example
 *.pem
 CLAUDE.md
-**/src/generated
+apps/api/src/generated
