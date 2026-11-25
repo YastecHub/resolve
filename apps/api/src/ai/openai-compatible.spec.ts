@@ -77,6 +77,29 @@ describe('OpenAiCompatibleProvider', () => {
     });
   });
 
+  it('keeps provider extra_content on tool calls and sends it back next turn', async () => {
+    const signature = { google: { thought_signature: 'sig-abc' } };
+    const withSignature = structuredClone(completion);
+    (withSignature.choices[0]!.message.tool_calls[0] as Record<string, unknown>).extra_content =
+      signature;
+    const fetchMock = vi.fn(async () => json(withSignature));
+    const { adapter } = provider(fetchMock as unknown as typeof fetch);
+
+    const first = await adapter.chat({ messages: [{ role: 'user', content: 'hi' }] });
+    expect(first.toolCalls[0]?.extraContent).toEqual(signature);
+
+    await adapter.chat({
+      messages: [
+        { role: 'user', content: 'hi' },
+        { role: 'assistant', content: null, toolCalls: first.toolCalls },
+        { role: 'tool', toolCallId: 'call_1', content: '{}' },
+      ],
+    });
+    const [, init] = fetchMock.mock.calls[1] as unknown as [string, RequestInit];
+    const sent = JSON.parse(String(init.body)).messages[1].tool_calls[0];
+    expect(sent.extra_content).toEqual(signature);
+  });
+
   it('turns malformed tool arguments into a parse error for the loop', async () => {
     const broken = structuredClone(completion);
     broken.choices[0]!.message.tool_calls[0]!.function.arguments = '{"transaction_id": ';

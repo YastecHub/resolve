@@ -3,7 +3,7 @@ export type Message =
   | {
       role: 'assistant';
       content: string | null;
-      toolCalls?: { id: string; name: string; arguments: unknown }[];
+      toolCalls?: { id: string; name: string; arguments: unknown; extraContent?: unknown }[];
     }
   | { role: 'tool'; toolCallId: string; content: string };
 
@@ -25,6 +25,7 @@ export interface ToolCall {
   id: string;
   name: string;
   arguments: unknown;
+  extraContent?: unknown;
 }
 
 export interface ChatResponse {
