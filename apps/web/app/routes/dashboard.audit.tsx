@@ -15,11 +15,11 @@ import { formatDurationMs, shortId } from '~/lib/format';
 import { ANALYST_ACTION_LABELS } from '~/lib/labels';
 import { paths } from '~/lib/paths';
 import { cn } from '~/lib/cn';
-import { fetchCaseFile, fetchVerify } from '~/design/screens/data/hooks';
-import { useAccessEvents, useAnalystActions, useInvestigations } from '~/design/screens/data/hooks';
+import { fetchCaseFile, fetchVerify } from '~/api/hooks';
+import { useAccessEvents, useAnalystActions, useInvestigations } from '~/api/hooks';
 import type { AccessAction } from '@resolve/shared';
 import { ApiError } from '@resolve/api-client';
-import { type VerifyResponse } from '~/design/screens/data/types';
+import { type VerifyResponse } from '~/api/types';
 
 export function meta() {
   return [{ title: 'Audit · Resolve' }];
