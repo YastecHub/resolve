@@ -11,6 +11,7 @@ export default tseslint.config(
       '**/.react-router/**',
       'apps/web/app/lib/icons.generated.ts',
       'packages/api-client/src/generated/**',
+      'apps/api/src/generated/**',
     ],
   },
   js.configs.recommended,
