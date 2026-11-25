@@ -7,6 +7,7 @@ export function meta() {
 export default function Overview() {
   return (
     <EmptyState
+      icon="nav.overview"
       title="Overview is next"
       description="You are signed in. The overview, cases queue and case detail are built one screen at a time."
     />
