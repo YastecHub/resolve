@@ -8,7 +8,10 @@ import {
   getDisputeCaseFile,
   getDisputeTrace,
   getMe,
+  listAccessAudit,
+  listActionAudit,
   listDisputes,
+  listInvestigationAudit,
   overrideDispute,
   retryDispute,
   verifyDisputeChain,
@@ -17,7 +20,10 @@ import {
   signIn as signInRequest,
   testAiProfile,
   updateConfig,
+  type AccessAuditDto,
+  type ActionAuditDto,
   type AiProfileDto,
+  type InvestigationAuditDto,
   type AnalystActionDto,
   type CaseFileDto,
   type DisputeDetailDto,
@@ -35,6 +41,7 @@ import {
   type MetricsDto,
 } from '@resolve/api-client';
 import type {
+  AccessAction,
   AiProfileKind,
   ClassifiedType,
   DisputeStatus,
@@ -43,8 +50,10 @@ import type {
 import { STAFF_SIGN_IN } from '~/lib/staff-sign-in';
 import { setToken } from '~/lib/session';
 import type {
+  AccessEvent,
   AiProfile,
   AiProfileTestResult,
+  AnalystActionAuditRow,
   AnalystActionRow,
   CaseFile,
   DisputeDetail,
@@ -52,6 +61,7 @@ import type {
   DisputeQuery,
   DisputeSortField,
   DisputeSummary,
+  InvestigationAuditRow,
   InvestigationSummary,
   MeResponse,
   Metrics,
@@ -313,7 +323,7 @@ export async function fetchCaseFile(id: string): Promise<CaseFile> {
   return toCaseFile((await getDisputeCaseFile(id)).data);
 }
 
-async function fetchVerify(id: string): Promise<VerifyResponse> {
+export async function fetchVerify(id: string): Promise<VerifyResponse> {
   return (await verifyDisputeChain(id)).data;
 }
 
@@ -480,5 +490,60 @@ export function useSaveConfig() {
       client.setQueryData(keys.config, config);
       void client.invalidateQueries({ queryKey: ['disputes'] });
     },
+  });
+}
+
+function toPage<D, V>(
+  res: { data: D[]; meta: { page: number; pageSize: number; total: number } },
+  map: (row: D) => V,
+): Page<V> {
+  return {
+    items: res.data.map(map),
+    page: res.meta.page,
+    pageSize: res.meta.pageSize,
+    total: res.meta.total,
+  };
+}
+
+const toInvestigationRow = (d: InvestigationAuditDto): InvestigationAuditRow => ({
+  ...d,
+  providerKind: d.providerKind as AiProfileKind | null,
+  startedAt: parse(d.startedAt),
+});
+
+const toActionRow = (d: ActionAuditDto): AnalystActionAuditRow => ({
+  ...d,
+  createdAt: parse(d.createdAt),
+});
+
+const toAccessEvent = (d: AccessAuditDto): AccessEvent => ({
+  ...d,
+  action: d.action as AccessAction,
+  createdAt: parse(d.createdAt),
+});
+
+export function useInvestigations(page = 1, pageSize = 25) {
+  return useQuery({
+    queryKey: keys.investigations(page, pageSize),
+    queryFn: async () =>
+      toPage(await listInvestigationAudit({ page, pageSize }), toInvestigationRow),
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useAnalystActions(page = 1, pageSize = 25) {
+  return useQuery({
+    queryKey: keys.actions(page, pageSize),
+    queryFn: async () => toPage(await listActionAudit({ page, pageSize }), toActionRow),
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useAccessEvents(page = 1, pageSize = 25, enabled = true) {
+  return useQuery({
+    queryKey: keys.access(page, pageSize),
+    queryFn: async () => toPage(await listAccessAudit({ page, pageSize }), toAccessEvent),
+    placeholderData: keepPreviousData,
+    enabled,
   });
 }
