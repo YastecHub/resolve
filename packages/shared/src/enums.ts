@@ -133,5 +133,6 @@ export const ACCESS_ACTIONS = [
   'suspended',
   'reinstated',
   'first_sign_in',
+  'demo_reset',
 ] as const;
 export type AccessAction = (typeof ACCESS_ACTIONS)[number];
