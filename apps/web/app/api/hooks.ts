@@ -8,12 +8,15 @@ import {
   getDisputeCaseFile,
   getDisputeTrace,
   getMe,
+  inviteStaff,
   listAccessAudit,
   listActionAudit,
   listDisputes,
   listInvestigationAudit,
+  listStaff,
   overrideDispute,
   retryDispute,
+  updateStaff,
   verifyDisputeChain,
   getMetrics,
   listAiProfiles,
@@ -29,8 +32,11 @@ import {
   type DisputeDetailDto,
   type DisputeSummaryDto,
   type InvestigationSummaryDto,
+  type InviteStaffDto,
   type OverrideDisputeDto,
   type SettingsDto,
+  type StaffMemberDto,
+  type UpdateStaffDto,
   type UpdateSettingsDto,
   type TraceStepDto,
   type TransactionSummaryDto,
@@ -46,6 +52,7 @@ import type {
   ClassifiedType,
   DisputeStatus,
   ResolutionAction,
+  StaffRole,
 } from '@resolve/shared';
 import { STAFF_SIGN_IN } from '~/lib/staff-sign-in';
 import { setToken } from '~/lib/session';
@@ -61,12 +68,14 @@ import type {
   DisputeQuery,
   DisputeSortField,
   DisputeSummary,
+  InviteStaff,
   InvestigationAuditRow,
   InvestigationSummary,
   MeResponse,
   Metrics,
   Page,
   PolicyConfig,
+  StaffMember,
   TraceResponse,
   TraceStepRow,
   TransactionSummary,
@@ -545,5 +554,55 @@ export function useAccessEvents(page = 1, pageSize = 25, enabled = true) {
     queryFn: async () => toPage(await listAccessAudit({ page, pageSize }), toAccessEvent),
     placeholderData: keepPreviousData,
     enabled,
+  });
+}
+
+const toStaffMember = (d: StaffMemberDto): StaffMember => ({
+  ...d,
+  createdAt: parse(d.createdAt),
+  lastSignInAt: parseOrNull(d.lastSignInAt),
+});
+
+export function useTeam(enabled = true) {
+  return useQuery({
+    queryKey: keys.team,
+    queryFn: async () => (await listStaff()).data.map(toStaffMember),
+    enabled,
+  });
+}
+
+function useAfterTeamChange() {
+  const client = useQueryClient();
+  return () => {
+    void client.invalidateQueries({ queryKey: keys.team });
+    void client.invalidateQueries({ queryKey: ['audit'] });
+    void client.invalidateQueries({ queryKey: keys.me });
+  };
+}
+
+export function useInviteStaff() {
+  const after = useAfterTeamChange();
+  return useMutation({
+    mutationFn: async (body: InviteStaff) =>
+      toStaffMember((await inviteStaff(body as InviteStaffDto)).data),
+    onSuccess: after,
+  });
+}
+
+export function useChangeRole() {
+  const after = useAfterTeamChange();
+  return useMutation({
+    mutationFn: async (vars: { id: string; role: StaffRole }) =>
+      toStaffMember((await updateStaff(vars.id, { role: vars.role } as UpdateStaffDto)).data),
+    onSuccess: after,
+  });
+}
+
+export function useChangeStatus() {
+  const after = useAfterTeamChange();
+  return useMutation({
+    mutationFn: async (vars: { id: string; status: 'suspended' | 'active' }) =>
+      toStaffMember((await updateStaff(vars.id, { status: vars.status } as UpdateStaffDto)).data),
+    onSuccess: after,
   });
 }
