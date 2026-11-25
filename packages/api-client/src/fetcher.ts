@@ -39,12 +39,21 @@ function toApiError(res: Response, body: unknown): ApiError {
   );
 }
 
+let getAuthToken: () => string | null = () => null;
+
+/** Register where the bearer token comes from. The web app calls this once at start-up. */
+export function setAuthTokenGetter(getter: () => string | null) {
+  getAuthToken = getter;
+}
+
 export async function apiFetch<T>(url: string, options: RequestInit = {}): Promise<T> {
   const headers = new Headers(options.headers);
   if (options.body !== undefined && options.body !== null && !headers.has('content-type')) {
     headers.set('content-type', 'application/json');
   }
   if (!headers.has('accept')) headers.set('accept', 'application/json');
+  const token = getAuthToken();
+  if (token && !headers.has('authorization')) headers.set('authorization', `Bearer ${token}`);
 
   let res: Response;
   try {
