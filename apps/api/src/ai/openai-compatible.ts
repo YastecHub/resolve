@@ -58,6 +58,7 @@ function toWireMessage(message: Message): Record<string, unknown> {
                 id: call.id,
                 type: 'function',
                 function: { name: call.name, arguments: JSON.stringify(call.arguments ?? {}) },
+                ...(call.extraContent === undefined ? {} : { extra_content: call.extraContent }),
               })),
             }
           : {}),
@@ -72,7 +73,11 @@ interface WireResponse {
   choices?: {
     message?: {
       content?: string | null;
-      tool_calls?: { id?: string; function?: { name?: string; arguments?: unknown } }[];
+      tool_calls?: {
+        id?: string;
+        function?: { name?: string; arguments?: unknown };
+        extra_content?: unknown;
+      }[];
     };
   }[];
   usage?: { prompt_tokens?: number; completion_tokens?: number };
@@ -189,6 +194,7 @@ export class OpenAiCompatibleProvider implements ChatProvider {
       id: call.id ?? `call_${index}`,
       name: call.function?.name ?? '',
       arguments: parseToolArguments(call.function?.arguments),
+      ...(call.extra_content === undefined ? {} : { extraContent: call.extra_content }),
     }));
     return {
       content: message.content ?? null,
