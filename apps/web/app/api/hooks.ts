@@ -1,19 +1,34 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   getMe,
+  listDisputes,
   getMetrics,
   listAiProfiles,
   signIn as signInRequest,
   testAiProfile,
   updateConfig,
   type AiProfileDto,
+  type DisputeListItemDto,
+  type ListDisputesParams,
+  type ListDisputesSort,
   type MeDto,
   type MetricsDto,
 } from '@resolve/api-client';
-import type { AiProfileKind, ClassifiedType } from '@resolve/shared';
+import type { AiProfileKind, ClassifiedType, DisputeStatus } from '@resolve/shared';
 import { STAFF_SIGN_IN } from '~/lib/staff-sign-in';
 import { setToken } from '~/lib/session';
-import type { AiProfile, AiProfileTestResult, DisputeQuery, MeResponse, Metrics } from './types';
+import type {
+  AiProfile,
+  AiProfileTestResult,
+  DisputeListItem,
+  DisputeQuery,
+  DisputeSortField,
+  MeResponse,
+  Metrics,
+  Page,
+} from './types';
+
+const ACTIVE = new Set<string>(['queued', 'investigating']);
 
 // Cache keys. Kept identical to the reference screens so invalidations line up
 // while the remaining screens are wired one at a time.
@@ -135,5 +150,73 @@ export function useSetProfile() {
       client.setQueryData(keys.profiles, profiles);
       void client.invalidateQueries({ queryKey: keys.config });
     },
+  });
+}
+
+// The API sorts by createdAt, slaDueAt, amountMinor and confidence. The queue also
+// offers "priority" and "updated", so they map to the closest sortable field.
+function toSort(sort: DisputeSortField | undefined): ListDisputesSort | undefined {
+  switch (sort) {
+    case 'createdAt':
+    case 'slaDueAt':
+    case 'amountMinor':
+    case 'confidence':
+      return sort;
+    case 'updatedAt':
+      return 'createdAt';
+    case 'priority':
+      return 'slaDueAt';
+    default:
+      return undefined;
+  }
+}
+
+function toListItem(d: DisputeListItemDto): DisputeListItem {
+  return {
+    ...d,
+    slaDueAt: Date.parse(d.slaDueAt),
+    createdAt: Date.parse(d.createdAt),
+    updatedAt: Date.parse(d.updatedAt),
+  };
+}
+
+async function fetchDisputes(query: DisputeQuery): Promise<Page<DisputeListItem>> {
+  const params: ListDisputesParams = {
+    status: query.status,
+    type: query.type,
+    q: query.q,
+    sort: toSort(query.sort),
+    order: query.order,
+    page: query.page,
+    pageSize: query.pageSize,
+  };
+  const res = await listDisputes(params);
+  return {
+    items: res.data.map(toListItem),
+    page: res.meta.page,
+    pageSize: res.meta.pageSize,
+    total: res.meta.total,
+  };
+}
+
+export function useDisputes(query: DisputeQuery) {
+  return useQuery({
+    queryKey: keys.disputes(query),
+    queryFn: () => fetchDisputes(query),
+    placeholderData: keepPreviousData,
+    refetchInterval: (state) =>
+      state.state.data?.items.some((item) => ACTIVE.has(item.status as DisputeStatus))
+        ? 3_000
+        : false,
+  });
+}
+
+export function useDisputeSearch(q: string) {
+  return useQuery({
+    queryKey: ['disputes', 'search', q],
+    queryFn: () => fetchDisputes({ q: q.trim(), pageSize: 6, sort: 'priority', order: 'asc' }),
+    enabled: q.trim().length >= 2,
+    placeholderData: keepPreviousData,
+    staleTime: 2_000,
   });
 }
