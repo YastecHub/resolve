@@ -47,7 +47,7 @@ export function HydrateFallback() {
   return <AppLoading />;
 }
 
-const RESPONSIVE_PATHS = new Set(['/']);
+const RESPONSIVE_PATHS = new Set(['/status']);
 
 export default function App() {
   const responsive = RESPONSIVE_PATHS.has(useLocation().pathname);
