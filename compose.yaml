@@ -29,6 +29,9 @@ services:
       retries: 20
 
   api:
+    env_file:
+      - path: .env
+        required: false
     build:
       context: .
       dockerfile: docker/api.Dockerfile
@@ -45,7 +48,6 @@ services:
       ADMIN_NAME: ${ADMIN_NAME:-}
       AI_PROFILES: ${AI_PROFILES:-[]}
       AI_ACTIVE_PROFILE: ${AI_ACTIVE_PROFILE:-hosted}
-      AI_KEY_HOSTED: ${AI_KEY_HOSTED:-}
       CASE_FILES_DIR: /data/case-files
     volumes:
       - case-files:/data/case-files
