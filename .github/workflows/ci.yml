@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.25.0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: API client is up to date
+        run: |
+          pnpm api:generate
+          git diff --exit-code -- apps/api/openapi.json packages/api-client/src/generated
+      - run: pnpm format:check
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm --filter api test:e2e
+      - run: pnpm build
+
+  deploy:
+    name: Deploy to Nobus
+    needs: check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    environment: production
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Configure SSH
+        env:
+          VM_HOST: ${{ secrets.VM_HOST }}
+          VM_SSH_KEY: ${{ secrets.VM_SSH_KEY }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$VM_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$VM_HOST" >> ~/.ssh/known_hosts
+
+      - name: Upload source
+        env:
+          VM_HOST: ${{ secrets.VM_HOST }}
+          VM_USER: ${{ secrets.VM_USER }}
+        run: |
+          rsync -az --delete \
+            --exclude .git --exclude node_modules --exclude .env \
+            -e "ssh -i ~/.ssh/deploy_key" \
+            ./ "$VM_USER@$VM_HOST:~/resolve/"
+
+      - name: Build and restart
+        env:
+          VM_HOST: ${{ secrets.VM_HOST }}
+          VM_USER: ${{ secrets.VM_USER }}
+        run: |
+          ssh -i ~/.ssh/deploy_key "$VM_USER@$VM_HOST" \
+            "cd ~/resolve && APP_VERSION=${GITHUB_SHA::7} docker compose up -d --build --remove-orphans && docker image prune -f"
+
+      - name: Health check
+        env:
+          VM_HOST: ${{ secrets.VM_HOST }}
+          VM_USER: ${{ secrets.VM_USER }}
+        run: |
+          ssh -i ~/.ssh/deploy_key "$VM_USER@$VM_HOST" '
+            for i in $(seq 1 30); do
+              if curl -fsS http://127.0.0.1:9000/api/v1/health; then exit 0; fi
+              sleep 4
+            done
+            docker compose -f ~/resolve/compose.yaml logs --tail 80 api
+            exit 1
+          '
