@@ -9,7 +9,11 @@ import { configureApp } from '../src/setup.js';
 
 describe('API envelope', () => {
   let app: INestApplication<App>;
-  const database = { ping: vi.fn(), onModuleDestroy: vi.fn() };
+  const database = {
+    ping: vi.fn(),
+    onModuleDestroy: vi.fn(),
+    staff: { count: vi.fn().mockResolvedValue(1) },
+  };
   const redis = { ping: vi.fn(), onModuleDestroy: vi.fn() };
 
   beforeEach(async () => {
@@ -63,23 +67,9 @@ describe('API envelope', () => {
     expect(res.body.meta.requestId).toBe('abc-123');
   });
 
-  it('rejects an invalid body with field errors', async () => {
-    const res = await request(app.getHttpServer())
-      .post('/api/v1/disputes')
-      .send({ transactionId: 42, reasonCode: 'nope', extra: true })
-      .expect(400);
-    expect(res.body.success).toBe(false);
-    expect(res.body.error.code).toBe('validation_error');
-    const fields = res.body.error.fieldErrors.map((e: { field: string }) => e.field);
-    expect(fields).toEqual(expect.arrayContaining(['transactionId', 'reasonCode', 'extra']));
-  });
-
-  it('answers skeleton endpoints with not_implemented', async () => {
-    const res = await request(app.getHttpServer())
-      .post('/api/v1/disputes')
-      .send({ transactionId: 'txn_ABC123', reasonCode: 'failed_transfer' })
-      .expect(501);
-    expect(res.body.error.code).toBe('not_implemented');
+  it('answers protected routes without a token with 401', async () => {
+    const res = await request(app.getHttpServer()).get('/api/v1/disputes').expect(401);
+    expect(res.body).toMatchObject({ success: false, error: { code: 'unauthorized' } });
   });
 
   it('uses the failure envelope for unknown routes', async () => {

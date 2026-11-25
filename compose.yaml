@@ -39,6 +39,16 @@ services:
       PORT: 9000
       DATABASE_URL: postgres://${POSTGRES_USER:-resolve}:${POSTGRES_PASSWORD:-resolve}@postgres:5432/${POSTGRES_DB:-resolve}
       REDIS_URL: redis://redis:6379
+      AUTH_SECRET: ${AUTH_SECRET:?set AUTH_SECRET in .env}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_STAFF_ID: ${ADMIN_STAFF_ID:-}
+      ADMIN_NAME: ${ADMIN_NAME:-}
+      AI_PROFILES: ${AI_PROFILES:-[]}
+      AI_ACTIVE_PROFILE: ${AI_ACTIVE_PROFILE:-hosted}
+      AI_KEY_HOSTED: ${AI_KEY_HOSTED:-}
+      CASE_FILES_DIR: /data/case-files
+    volumes:
+      - case-files:/data/case-files
     ports:
       - '${BIND_HOST:-127.0.0.1}:${API_PORT:-9000}:9000'
     depends_on:
@@ -60,3 +70,4 @@ services:
 volumes:
   postgres-data:
   redis-data:
+  case-files:

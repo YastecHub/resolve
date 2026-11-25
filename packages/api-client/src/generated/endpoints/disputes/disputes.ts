@@ -9,6 +9,8 @@
  * - Success: `{ "success": true, "data": …, "meta": { "requestId", "timestamp" } }`. Paged lists add `page`, `pageSize` and `total` to `meta`.
  * - Failure: `{ "success": false, "error": { "code", "message", "fieldErrors"?, "details"? }, "meta": { "requestId", "timestamp" } }`.
  *
+ * **Auth.** Sign in with `POST /auth/sign-in`, then send `Authorization: Bearer <token>` on every other route except `/health`.
+ *
  * **Money** is integer kobo (`amountMinor`). **Request IDs**: send `x-request-id` to correlate, or one is generated and returned in the same header.
  * OpenAPI spec version: 1.0.0
  */
@@ -32,12 +34,25 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  ApproveDispute200,
+  ApproveDisputeDto,
   CreateDispute201,
   CreateDisputeDto,
+  EditDisputeMessage200,
+  EditMessageDto,
   ErrorResponseDto,
+  EscalateDispute200,
+  EscalateDisputeDto,
   GetDispute200,
+  GetDisputeCaseFile200,
+  GetDisputeTrace200,
+  GetDisputeTraceParams,
   ListDisputes200,
-  ListDisputesParams
+  ListDisputesParams,
+  OverrideDispute200,
+  OverrideDisputeDto,
+  RetryDispute200,
+  VerifyDisputeChain200
 } from '../../model';
 
 import { apiFetch } from '../../../fetcher';
@@ -162,7 +177,7 @@ export const useCreateDispute = <TError = ErrorType<ErrorResponseDto>,
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
-    const explodeParameters = ["status"];
+    const explodeParameters = ["status","type"];
 
     if (Array.isArray(value) && explodeParameters.includes(key)) {
       value.forEach((v) => {
@@ -182,7 +197,7 @@ export const useCreateDispute = <TError = ErrorType<ErrorResponseDto>,
 }
 
 /**
- * Paged list, newest first. Pagination is in `meta`.
+ * Paged and filterable. Pagination and `countsByStatus` (for the status tabs) are in `meta`.
  * @summary List disputes
  */
 export const listDisputes = async (params?: ListDisputesParams, options?: Parameters<typeof apiFetch>[1]): Promise<ListDisputes200> => {
@@ -230,7 +245,7 @@ export type ListDisputesQueryError = ErrorType<ErrorResponseDto>
 
 
 /**
- * Paged list, newest first. Pagination is in `meta`.
+ * Paged and filterable. Pagination and `countsByStatus` (for the status tabs) are in `meta`.
  * @summary List disputes
  */
 export function useListDisputes<TData = Awaited<ReturnType<typeof listDisputes>>, TError = ErrorType<ErrorResponseDto>>(
@@ -244,7 +259,7 @@ export function useListDisputes<TData = Awaited<ReturnType<typeof listDisputes>>
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * Paged list, newest first. Pagination is in `meta`.
+ * Paged and filterable. Pagination and `countsByStatus` (for the status tabs) are in `meta`.
  * @summary List disputes
  */
 export function useListDisputes<TData = Awaited<ReturnType<typeof listDisputes>>, TError = ErrorType<ErrorResponseDto>>(
@@ -258,7 +273,7 @@ export function useListDisputes<TData = Awaited<ReturnType<typeof listDisputes>>
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * Paged list, newest first. Pagination is in `meta`.
+ * Paged and filterable. Pagination and `countsByStatus` (for the status tabs) are in `meta`.
  * @summary List disputes
  */
 export function useListDisputes<TData = Awaited<ReturnType<typeof listDisputes>>, TError = ErrorType<ErrorResponseDto>>(
@@ -266,7 +281,7 @@ export function useListDisputes<TData = Awaited<ReturnType<typeof listDisputes>>
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * Paged list, newest first. Pagination is in `meta`.
+ * Paged and filterable. Pagination and `countsByStatus` (for the status tabs) are in `meta`.
  * @summary List disputes
  */
 export function useListDisputes<TData = Awaited<ReturnType<typeof listDisputes>>, TError = ErrorType<ErrorResponseDto>>(
@@ -295,6 +310,7 @@ export const getGetDisputeUrl = (id: string,) => {
 }
 
 /**
+ * The dispute with its transaction, customer, latest investigation and analyst actions.
  * @summary Get a dispute
  */
 export const getDispute = async (id: string, options?: Parameters<typeof apiFetch>[1]): Promise<GetDispute200> => {
@@ -341,7 +357,10 @@ export type GetDisputeQueryResult = NonNullable<Awaited<ReturnType<typeof getDis
 export type GetDisputeQueryError = ErrorType<ErrorResponseDto>
 
 
-/** @summary Get a dispute */
+/**
+ * The dispute with its transaction, customer, latest investigation and analyst actions.
+ * @summary Get a dispute
+ */
 export function useGetDispute<TData = Awaited<ReturnType<typeof getDispute>>, TError = ErrorType<ErrorResponseDto>>(
  id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDispute>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
@@ -352,7 +371,10 @@ export function useGetDispute<TData = Awaited<ReturnType<typeof getDispute>>, TE
       >, request?: SecondParameter<typeof apiFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/** @summary Get a dispute */
+/**
+ * The dispute with its transaction, customer, latest investigation and analyst actions.
+ * @summary Get a dispute
+ */
 export function useGetDispute<TData = Awaited<ReturnType<typeof getDispute>>, TError = ErrorType<ErrorResponseDto>>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDispute>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
@@ -363,12 +385,18 @@ export function useGetDispute<TData = Awaited<ReturnType<typeof getDispute>>, TE
       >, request?: SecondParameter<typeof apiFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/** @summary Get a dispute */
+/**
+ * The dispute with its transaction, customer, latest investigation and analyst actions.
+ * @summary Get a dispute
+ */
 export function useGetDispute<TData = Awaited<ReturnType<typeof getDispute>>, TError = ErrorType<ErrorResponseDto>>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDispute>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/** @summary Get a dispute */
+/**
+ * The dispute with its transaction, customer, latest investigation and analyst actions.
+ * @summary Get a dispute
+ */
 export function useGetDispute<TData = Awaited<ReturnType<typeof getDispute>>, TError = ErrorType<ErrorResponseDto>>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDispute>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
  , queryClient?: QueryClient
@@ -386,3 +414,724 @@ export function useGetDispute<TData = Awaited<ReturnType<typeof getDispute>>, TE
 
 
 
+export const getGetDisputeTraceUrl = (id: string,
+    params?: GetDisputeTraceParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/v1/disputes/${id}/trace?${stringifiedParams}` : `/api/v1/disputes/${id}/trace`
+}
+
+/**
+ * Steps of the latest investigation after `afterSeq`. Poll about every 1.5 s until `done` is true.
+ * @summary Live investigation trace
+ */
+export const getDisputeTrace = async (id: string,
+    params?: GetDisputeTraceParams, options?: Parameters<typeof apiFetch>[1]): Promise<GetDisputeTrace200> => {
+
+  return apiFetch<GetDisputeTrace200>(getGetDisputeTraceUrl(id,params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetDisputeTraceQueryKey = (id: string,
+    params?: GetDisputeTraceParams,) => {
+    return [
+    `/api/v1/disputes/${id}/trace`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetDisputeTraceQueryOptions = <TData = Awaited<ReturnType<typeof getDisputeTrace>>, TError = ErrorType<ErrorResponseDto>>(id: string,
+    params?: GetDisputeTraceParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDisputeTrace>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDisputeTraceQueryKey(id,params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDisputeTrace>>> = ({ signal }) => getDisputeTrace(id,params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDisputeTrace>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetDisputeTraceQueryResult = NonNullable<Awaited<ReturnType<typeof getDisputeTrace>>>
+export type GetDisputeTraceQueryError = ErrorType<ErrorResponseDto>
+
+
+/**
+ * Steps of the latest investigation after `afterSeq`. Poll about every 1.5 s until `done` is true.
+ * @summary Live investigation trace
+ */
+export function useGetDisputeTrace<TData = Awaited<ReturnType<typeof getDisputeTrace>>, TError = ErrorType<ErrorResponseDto>>(
+ id: string,
+    params: undefined |  GetDisputeTraceParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDisputeTrace>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getDisputeTrace>>,
+          TError,
+          Awaited<ReturnType<typeof getDisputeTrace>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Steps of the latest investigation after `afterSeq`. Poll about every 1.5 s until `done` is true.
+ * @summary Live investigation trace
+ */
+export function useGetDisputeTrace<TData = Awaited<ReturnType<typeof getDisputeTrace>>, TError = ErrorType<ErrorResponseDto>>(
+ id: string,
+    params?: GetDisputeTraceParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDisputeTrace>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getDisputeTrace>>,
+          TError,
+          Awaited<ReturnType<typeof getDisputeTrace>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Steps of the latest investigation after `afterSeq`. Poll about every 1.5 s until `done` is true.
+ * @summary Live investigation trace
+ */
+export function useGetDisputeTrace<TData = Awaited<ReturnType<typeof getDisputeTrace>>, TError = ErrorType<ErrorResponseDto>>(
+ id: string,
+    params?: GetDisputeTraceParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDisputeTrace>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Steps of the latest investigation after `afterSeq`. Poll about every 1.5 s until `done` is true.
+ * @summary Live investigation trace
+ */
+export function useGetDisputeTrace<TData = Awaited<ReturnType<typeof getDisputeTrace>>, TError = ErrorType<ErrorResponseDto>>(
+ id: string,
+    params?: GetDisputeTraceParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDisputeTrace>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetDisputeTraceQueryOptions(id,params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getVerifyDisputeChainUrl = (id: string,) => {
+
+
+
+
+  return `/api/v1/disputes/${id}/verify`
+}
+
+/**
+ * Recomputes the hash chain of the latest investigation.
+ * @summary Verify the audit chain
+ */
+export const verifyDisputeChain = async (id: string, options?: Parameters<typeof apiFetch>[1]): Promise<VerifyDisputeChain200> => {
+
+  return apiFetch<VerifyDisputeChain200>(getVerifyDisputeChainUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getVerifyDisputeChainQueryKey = (id: string,) => {
+    return [
+    `/api/v1/disputes/${id}/verify`
+    ] as const;
+    }
+
+
+export const getVerifyDisputeChainQueryOptions = <TData = Awaited<ReturnType<typeof verifyDisputeChain>>, TError = ErrorType<ErrorResponseDto>>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof verifyDisputeChain>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getVerifyDisputeChainQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof verifyDisputeChain>>> = ({ signal }) => verifyDisputeChain(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof verifyDisputeChain>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type VerifyDisputeChainQueryResult = NonNullable<Awaited<ReturnType<typeof verifyDisputeChain>>>
+export type VerifyDisputeChainQueryError = ErrorType<ErrorResponseDto>
+
+
+/**
+ * Recomputes the hash chain of the latest investigation.
+ * @summary Verify the audit chain
+ */
+export function useVerifyDisputeChain<TData = Awaited<ReturnType<typeof verifyDisputeChain>>, TError = ErrorType<ErrorResponseDto>>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof verifyDisputeChain>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof verifyDisputeChain>>,
+          TError,
+          Awaited<ReturnType<typeof verifyDisputeChain>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Recomputes the hash chain of the latest investigation.
+ * @summary Verify the audit chain
+ */
+export function useVerifyDisputeChain<TData = Awaited<ReturnType<typeof verifyDisputeChain>>, TError = ErrorType<ErrorResponseDto>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof verifyDisputeChain>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof verifyDisputeChain>>,
+          TError,
+          Awaited<ReturnType<typeof verifyDisputeChain>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Recomputes the hash chain of the latest investigation.
+ * @summary Verify the audit chain
+ */
+export function useVerifyDisputeChain<TData = Awaited<ReturnType<typeof verifyDisputeChain>>, TError = ErrorType<ErrorResponseDto>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof verifyDisputeChain>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Recomputes the hash chain of the latest investigation.
+ * @summary Verify the audit chain
+ */
+export function useVerifyDisputeChain<TData = Awaited<ReturnType<typeof verifyDisputeChain>>, TError = ErrorType<ErrorResponseDto>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof verifyDisputeChain>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getVerifyDisputeChainQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getGetDisputeCaseFileUrl = (id: string,) => {
+
+
+
+
+  return `/api/v1/disputes/${id}/case-file`
+}
+
+/**
+ * Everything about the dispute in one JSON document. Add `?download=1` to get it as an attachment.
+ * @summary The case file
+ */
+export const getDisputeCaseFile = async (id: string, options?: Parameters<typeof apiFetch>[1]): Promise<GetDisputeCaseFile200> => {
+
+  return apiFetch<GetDisputeCaseFile200>(getGetDisputeCaseFileUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetDisputeCaseFileQueryKey = (id: string,) => {
+    return [
+    `/api/v1/disputes/${id}/case-file`
+    ] as const;
+    }
+
+
+export const getGetDisputeCaseFileQueryOptions = <TData = Awaited<ReturnType<typeof getDisputeCaseFile>>, TError = ErrorType<ErrorResponseDto>>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDisputeCaseFile>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDisputeCaseFileQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDisputeCaseFile>>> = ({ signal }) => getDisputeCaseFile(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDisputeCaseFile>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetDisputeCaseFileQueryResult = NonNullable<Awaited<ReturnType<typeof getDisputeCaseFile>>>
+export type GetDisputeCaseFileQueryError = ErrorType<ErrorResponseDto>
+
+
+/**
+ * Everything about the dispute in one JSON document. Add `?download=1` to get it as an attachment.
+ * @summary The case file
+ */
+export function useGetDisputeCaseFile<TData = Awaited<ReturnType<typeof getDisputeCaseFile>>, TError = ErrorType<ErrorResponseDto>>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDisputeCaseFile>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getDisputeCaseFile>>,
+          TError,
+          Awaited<ReturnType<typeof getDisputeCaseFile>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Everything about the dispute in one JSON document. Add `?download=1` to get it as an attachment.
+ * @summary The case file
+ */
+export function useGetDisputeCaseFile<TData = Awaited<ReturnType<typeof getDisputeCaseFile>>, TError = ErrorType<ErrorResponseDto>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDisputeCaseFile>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getDisputeCaseFile>>,
+          TError,
+          Awaited<ReturnType<typeof getDisputeCaseFile>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Everything about the dispute in one JSON document. Add `?download=1` to get it as an attachment.
+ * @summary The case file
+ */
+export function useGetDisputeCaseFile<TData = Awaited<ReturnType<typeof getDisputeCaseFile>>, TError = ErrorType<ErrorResponseDto>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDisputeCaseFile>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * Everything about the dispute in one JSON document. Add `?download=1` to get it as an attachment.
+ * @summary The case file
+ */
+export function useGetDisputeCaseFile<TData = Awaited<ReturnType<typeof getDisputeCaseFile>>, TError = ErrorType<ErrorResponseDto>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDisputeCaseFile>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetDisputeCaseFileQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getApproveDisputeUrl = (id: string,) => {
+
+
+
+
+  return `/api/v1/disputes/${id}/approve`
+}
+
+/**
+ * Runs the recommended action. A recommendation of `none` rejects the dispute. Not available when the agent recommended manual review.
+ * @summary Approve the agent's recommendation
+ */
+export const approveDispute = async (id: string,
+    approveDisputeDto: ApproveDisputeDto, options?: Parameters<typeof apiFetch>[1]): Promise<ApproveDispute200> => {
+
+  return apiFetch<ApproveDispute200>(getApproveDisputeUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: getHeaders({ 'Content-Type': 'application/json' }, options?.headers),
+    body: JSON.stringify(approveDisputeDto)
+  }
+);}
+
+
+
+
+
+export const getApproveDisputeMutationKey = () => ['approveDispute'] as const;
+
+export const getApproveDisputeMutationOptions = <TError = ErrorType<ErrorResponseDto>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approveDispute>>, TError,ApproveDisputeMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof approveDispute>>, TError,ApproveDisputeMutationVariables, TContext> => {
+
+const mutationKey = getApproveDisputeMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof approveDispute>>, ApproveDisputeMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  approveDispute(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ApproveDisputeMutationResult = NonNullable<Awaited<ReturnType<typeof approveDispute>>>
+    export type ApproveDisputeMutationBody = BodyType<ApproveDisputeDto>
+    export type ApproveDisputeMutationError = ErrorType<ErrorResponseDto>
+    export type ApproveDisputeMutationVariables = {id: string;data: BodyType<ApproveDisputeDto>}
+
+    /**
+ * Runs the recommended action. A recommendation of `none` rejects the dispute. Not available when the agent recommended manual review.
+ * @summary Approve the agent's recommendation
+ */
+export const useApproveDispute = <TError = ErrorType<ErrorResponseDto>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approveDispute>>, TError,ApproveDisputeMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof approveDispute>>,
+        TError,
+        ApproveDisputeMutationVariables,
+        TContext
+      > => {
+      return useMutation(getApproveDisputeMutationOptions(options), queryClient);
+    }
+    export const getOverrideDisputeUrl = (id: string,) => {
+
+
+
+
+  return `/api/v1/disputes/${id}/override`
+}
+
+/**
+ * Runs the chosen action with a written reason. `none` rejects the dispute.
+ * @summary Override with a different action
+ */
+export const overrideDispute = async (id: string,
+    overrideDisputeDto: OverrideDisputeDto, options?: Parameters<typeof apiFetch>[1]): Promise<OverrideDispute200> => {
+
+  return apiFetch<OverrideDispute200>(getOverrideDisputeUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: getHeaders({ 'Content-Type': 'application/json' }, options?.headers),
+    body: JSON.stringify(overrideDisputeDto)
+  }
+);}
+
+
+
+
+
+export const getOverrideDisputeMutationKey = () => ['overrideDispute'] as const;
+
+export const getOverrideDisputeMutationOptions = <TError = ErrorType<ErrorResponseDto>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof overrideDispute>>, TError,OverrideDisputeMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof overrideDispute>>, TError,OverrideDisputeMutationVariables, TContext> => {
+
+const mutationKey = getOverrideDisputeMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof overrideDispute>>, OverrideDisputeMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  overrideDispute(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type OverrideDisputeMutationResult = NonNullable<Awaited<ReturnType<typeof overrideDispute>>>
+    export type OverrideDisputeMutationBody = BodyType<OverrideDisputeDto>
+    export type OverrideDisputeMutationError = ErrorType<ErrorResponseDto>
+    export type OverrideDisputeMutationVariables = {id: string;data: BodyType<OverrideDisputeDto>}
+
+    /**
+ * Runs the chosen action with a written reason. `none` rejects the dispute.
+ * @summary Override with a different action
+ */
+export const useOverrideDispute = <TError = ErrorType<ErrorResponseDto>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof overrideDispute>>, TError,OverrideDisputeMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof overrideDispute>>,
+        TError,
+        OverrideDisputeMutationVariables,
+        TContext
+      > => {
+      return useMutation(getOverrideDisputeMutationOptions(options), queryClient);
+    }
+    export const getEscalateDisputeUrl = (id: string,) => {
+
+
+
+
+  return `/api/v1/disputes/${id}/escalate`
+}
+
+/**
+ * @summary Escalate a dispute
+ */
+export const escalateDispute = async (id: string,
+    escalateDisputeDto: EscalateDisputeDto, options?: Parameters<typeof apiFetch>[1]): Promise<EscalateDispute200> => {
+
+  return apiFetch<EscalateDispute200>(getEscalateDisputeUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: getHeaders({ 'Content-Type': 'application/json' }, options?.headers),
+    body: JSON.stringify(escalateDisputeDto)
+  }
+);}
+
+
+
+
+
+export const getEscalateDisputeMutationKey = () => ['escalateDispute'] as const;
+
+export const getEscalateDisputeMutationOptions = <TError = ErrorType<ErrorResponseDto>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof escalateDispute>>, TError,EscalateDisputeMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof escalateDispute>>, TError,EscalateDisputeMutationVariables, TContext> => {
+
+const mutationKey = getEscalateDisputeMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof escalateDispute>>, EscalateDisputeMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  escalateDispute(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type EscalateDisputeMutationResult = NonNullable<Awaited<ReturnType<typeof escalateDispute>>>
+    export type EscalateDisputeMutationBody = BodyType<EscalateDisputeDto>
+    export type EscalateDisputeMutationError = ErrorType<ErrorResponseDto>
+    export type EscalateDisputeMutationVariables = {id: string;data: BodyType<EscalateDisputeDto>}
+
+    /** @summary Escalate a dispute */
+export const useEscalateDispute = <TError = ErrorType<ErrorResponseDto>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof escalateDispute>>, TError,EscalateDisputeMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof escalateDispute>>,
+        TError,
+        EscalateDisputeMutationVariables,
+        TContext
+      > => {
+      return useMutation(getEscalateDisputeMutationOptions(options), queryClient);
+    }
+    export const getEditDisputeMessageUrl = (id: string,) => {
+
+
+
+
+  return `/api/v1/disputes/${id}/message`
+}
+
+/**
+ * @summary Edit the customer message
+ */
+export const editDisputeMessage = async (id: string,
+    editMessageDto: EditMessageDto, options?: Parameters<typeof apiFetch>[1]): Promise<EditDisputeMessage200> => {
+
+  return apiFetch<EditDisputeMessage200>(getEditDisputeMessageUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: getHeaders({ 'Content-Type': 'application/json' }, options?.headers),
+    body: JSON.stringify(editMessageDto)
+  }
+);}
+
+
+
+
+
+export const getEditDisputeMessageMutationKey = () => ['editDisputeMessage'] as const;
+
+export const getEditDisputeMessageMutationOptions = <TError = ErrorType<ErrorResponseDto>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof editDisputeMessage>>, TError,EditDisputeMessageMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof editDisputeMessage>>, TError,EditDisputeMessageMutationVariables, TContext> => {
+
+const mutationKey = getEditDisputeMessageMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof editDisputeMessage>>, EditDisputeMessageMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  editDisputeMessage(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type EditDisputeMessageMutationResult = NonNullable<Awaited<ReturnType<typeof editDisputeMessage>>>
+    export type EditDisputeMessageMutationBody = BodyType<EditMessageDto>
+    export type EditDisputeMessageMutationError = ErrorType<ErrorResponseDto>
+    export type EditDisputeMessageMutationVariables = {id: string;data: BodyType<EditMessageDto>}
+
+    /** @summary Edit the customer message */
+export const useEditDisputeMessage = <TError = ErrorType<ErrorResponseDto>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof editDisputeMessage>>, TError,EditDisputeMessageMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof editDisputeMessage>>,
+        TError,
+        EditDisputeMessageMutationVariables,
+        TContext
+      > => {
+      return useMutation(getEditDisputeMessageMutationOptions(options), queryClient);
+    }
+    export const getRetryDisputeUrl = (id: string,) => {
+
+
+
+
+  return `/api/v1/disputes/${id}/retry`
+}
+
+/**
+ * @summary Retry a failed investigation
+ */
+export const retryDispute = async (id: string, options?: Parameters<typeof apiFetch>[1]): Promise<RetryDispute200> => {
+
+  return apiFetch<RetryDispute200>(getRetryDisputeUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getRetryDisputeMutationKey = () => ['retryDispute'] as const;
+
+export const getRetryDisputeMutationOptions = <TError = ErrorType<ErrorResponseDto>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof retryDispute>>, TError,RetryDisputeMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof retryDispute>>, TError,RetryDisputeMutationVariables, TContext> => {
+
+const mutationKey = getRetryDisputeMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof retryDispute>>, RetryDisputeMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  retryDispute(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RetryDisputeMutationResult = NonNullable<Awaited<ReturnType<typeof retryDispute>>>
+
+    export type RetryDisputeMutationError = ErrorType<ErrorResponseDto>
+    export type RetryDisputeMutationVariables = {id: string}
+
+    /** @summary Retry a failed investigation */
+export const useRetryDispute = <TError = ErrorType<ErrorResponseDto>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof retryDispute>>, TError,RetryDisputeMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof retryDispute>>,
+        TError,
+        RetryDisputeMutationVariables,
+        TContext
+      > => {
+      return useMutation(getRetryDisputeMutationOptions(options), queryClient);
+    }

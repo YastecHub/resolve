@@ -7,6 +7,8 @@ interface SuccessOptions {
   description: string;
   isArray?: boolean;
   paginated?: boolean;
+  /** Extra fields a paged list adds to `meta`. */
+  metaModel?: Type<unknown>;
 }
 
 export function ApiSuccess<T extends Type<unknown>>(model: T, options: SuccessOptions) {
@@ -19,12 +21,18 @@ export function ApiSuccess<T extends Type<unknown>>(model: T, options: SuccessOp
         allOf: [
           { $ref: getSchemaPath(ResponseMetaDto) },
           { $ref: getSchemaPath(PaginationMetaDto) },
+          ...(options.metaModel ? [{ $ref: getSchemaPath(options.metaModel) }] : []),
         ],
       }
     : { $ref: getSchemaPath(ResponseMetaDto) };
 
   return applyDecorators(
-    ApiExtraModels(model, ResponseMetaDto, PaginationMetaDto),
+    ApiExtraModels(
+      model,
+      ResponseMetaDto,
+      PaginationMetaDto,
+      ...(options.metaModel ? [options.metaModel] : []),
+    ),
     ApiResponse({
       status: options.status ?? HttpStatus.OK,
       description: options.description,

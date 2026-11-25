@@ -1,6 +1,461 @@
 {
   "openapi": "3.0.0",
   "paths": {
+    "/api/v1/config": {
+      "get": {
+        "operationId": "getConfig",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The current settings, defaults filled in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/SettingsDto"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMetaDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No or invalid token (`unauthorized`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The role lacks the permission (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Policy, agent and AI settings",
+        "tags": [
+          "config"
+        ]
+      },
+      "put": {
+        "description": "Partial update: send only the fields to change. Returns the full settings.",
+        "operationId": "updateConfig",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSettingsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated settings.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/SettingsDto"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMetaDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A value is invalid (`validation_error`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No or invalid token (`unauthorized`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The role lacks the permission (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Change settings",
+        "tags": [
+          "config"
+        ]
+      }
+    },
+    "/api/v1/config/ai-profiles": {
+      "get": {
+        "operationId": "listAiProfiles",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Every configured profile.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AiProfileDto"
+                      }
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMetaDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No or invalid token (`unauthorized`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The role lacks the permission (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Configured AI profiles",
+        "tags": [
+          "config"
+        ]
+      }
+    },
+    "/api/v1/config/ai-profiles/{name}/test": {
+      "post": {
+        "description": "Sends a one-token completion. A failed test still returns 200 with `ok: false`.",
+        "operationId": "testAiProfile",
+        "parameters": [
+          {
+            "name": "name",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "hosted",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The test ran.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AiProfileTestDto"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMetaDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No or invalid token (`unauthorized`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The role lacks the permission (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No profile with that name (`not_found`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Test an AI profile",
+        "tags": [
+          "config"
+        ]
+      }
+    },
+    "/api/v1/auth/sign-in": {
+      "post": {
+        "description": "Demo sign-in with a work email and staff ID. Returns a bearer token valid for 12 hours. A first sign-in activates an invited account.",
+        "operationId": "signIn",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignInDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Signed in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/SignInResultDto"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMetaDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body is invalid (`validation_error`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The email and staff ID don't match (`unauthorized`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The account is suspended (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Sign in",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/me": {
+      "get": {
+        "operationId": "getMe",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The signed-in person.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/MeDto"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMetaDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No or invalid token (`unauthorized`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The account is suspended (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "The signed-in person and their permissions",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/api/v1/health": {
       "get": {
         "description": "Checks the API, PostgreSQL and Redis. Returns 200 when everything is up and 503 with the full report in `error.details` when anything is down.",
@@ -88,7 +543,7 @@
                       ]
                     },
                     "data": {
-                      "$ref": "#/components/schemas/DisputeDto"
+                      "$ref": "#/components/schemas/DisputeSummaryDto"
                     },
                     "meta": {
                       "$ref": "#/components/schemas/ResponseMetaDto"
@@ -108,6 +563,26 @@
               }
             }
           },
+          "401": {
+            "description": "No or invalid token (`unauthorized`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The role lacks the permission (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
           "404": {
             "description": "The transaction does not exist (`not_found`).",
             "content": {
@@ -119,7 +594,7 @@
             }
           },
           "409": {
-            "description": "The transaction already has an open dispute (`conflict`).",
+            "description": "The transaction already has an open dispute (`conflict`); `details.disputeId` is the open one.",
             "content": {
               "application/json": {
                 "schema": {
@@ -129,13 +604,18 @@
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "File a dispute",
         "tags": [
           "disputes"
         ]
       },
       "get": {
-        "description": "Paged list, newest first. Pagination is in `meta`.",
+        "description": "Paged and filterable. Pagination and `countsByStatus` (for the status tabs) are in `meta`.",
         "operationId": "listDisputes",
         "parameters": [
           {
@@ -157,6 +637,64 @@
                   "failed"
                 ]
               }
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "description": "Only disputes whose latest investigation classified them as one of these types.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "failed_transfer_debit",
+                  "duplicate_charge",
+                  "unauthorised_payment",
+                  "merchant_non_delivery",
+                  "legitimate_transaction",
+                  "unknown"
+                ]
+              }
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Matches the dispute ID, transaction reference, customer ID or customer name.",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "createdAt",
+              "type": "string",
+              "enum": [
+                "createdAt",
+                "slaDueAt",
+                "amountMinor",
+                "confidence"
+              ]
+            }
+          },
+          {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "desc",
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
             }
           },
           {
@@ -203,7 +741,7 @@
                     "data": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/DisputeDto"
+                        "$ref": "#/components/schemas/DisputeListItemDto"
                       }
                     },
                     "meta": {
@@ -213,6 +751,9 @@
                         },
                         {
                           "$ref": "#/components/schemas/PaginationMetaDto"
+                        },
+                        {
+                          "$ref": "#/components/schemas/DisputeListMetaDto"
                         }
                       ]
                     }
@@ -230,8 +771,33 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "No or invalid token (`unauthorized`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The role lacks the permission (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "List disputes",
         "tags": [
           "disputes"
@@ -240,6 +806,7 @@
     },
     "/api/v1/disputes/{id}": {
       "get": {
+        "description": "The dispute with its transaction, customer, latest investigation and analyst actions.",
         "operationId": "getDispute",
         "parameters": [
           {
@@ -272,12 +839,32 @@
                       ]
                     },
                     "data": {
-                      "$ref": "#/components/schemas/DisputeDto"
+                      "$ref": "#/components/schemas/DisputeDetailDto"
                     },
                     "meta": {
                       "$ref": "#/components/schemas/ResponseMetaDto"
                     }
                   }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No or invalid token (`unauthorized`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The role lacks the permission (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
                 }
               }
             }
@@ -293,16 +880,1754 @@
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Get a dispute",
         "tags": [
           "disputes"
+        ]
+      }
+    },
+    "/api/v1/disputes/{id}/trace": {
+      "get": {
+        "description": "Steps of the latest investigation after `afterSeq`. Poll about every 1.5 s until `done` is true.",
+        "operationId": "getDisputeTrace",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "dsp_01JD8Q5C9V2M4X7P",
+              "type": "string"
+            }
+          },
+          {
+            "name": "afterSeq",
+            "required": false,
+            "in": "query",
+            "description": "Only steps after this sequence number.",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "New steps since `afterSeq`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/TraceDto"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMetaDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A query parameter is invalid (`validation_error`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No or invalid token (`unauthorized`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The role lacks the permission (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No dispute with that ID (`not_found`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Live investigation trace",
+        "tags": [
+          "disputes"
+        ]
+      }
+    },
+    "/api/v1/disputes/{id}/verify": {
+      "get": {
+        "description": "Recomputes the hash chain of the latest investigation.",
+        "operationId": "verifyDisputeChain",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "dsp_01JD8Q5C9V2M4X7P",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The verification result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/ChainVerificationDto"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMetaDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No or invalid token (`unauthorized`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The role lacks the permission (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No dispute, or it has no investigation yet (`not_found`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Verify the audit chain",
+        "tags": [
+          "disputes"
+        ]
+      }
+    },
+    "/api/v1/disputes/{id}/case-file": {
+      "get": {
+        "description": "Everything about the dispute in one JSON document. Add `?download=1` to get it as an attachment.",
+        "operationId": "getDisputeCaseFile",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "dsp_01JD8Q5C9V2M4X7P",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The case file.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/CaseFileDto"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMetaDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No or invalid token (`unauthorized`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The role lacks the permission (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No dispute with that ID (`not_found`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "The case file",
+        "tags": [
+          "disputes"
+        ]
+      }
+    },
+    "/api/v1/disputes/{id}/approve": {
+      "post": {
+        "description": "Runs the recommended action. A recommendation of `none` rejects the dispute. Not available when the agent recommended manual review.",
+        "operationId": "approveDispute",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "dsp_01JD8Q5C9V2M4X7P",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApproveDisputeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated dispute.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/DisputeDetailDto"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMetaDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body is invalid (`validation_error`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No or invalid token (`unauthorized`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The role lacks the permission (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No dispute with that ID (`not_found`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Not allowed from the current status (`invalid_state`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Approve the agent's recommendation",
+        "tags": [
+          "disputes"
+        ]
+      }
+    },
+    "/api/v1/disputes/{id}/override": {
+      "post": {
+        "description": "Runs the chosen action with a written reason. `none` rejects the dispute.",
+        "operationId": "overrideDispute",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "dsp_01JD8Q5C9V2M4X7P",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OverrideDisputeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated dispute.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/DisputeDetailDto"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMetaDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body is invalid (`validation_error`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No or invalid token (`unauthorized`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The role lacks the permission (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No dispute with that ID (`not_found`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Not allowed from the current status (`invalid_state`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Override with a different action",
+        "tags": [
+          "disputes"
+        ]
+      }
+    },
+    "/api/v1/disputes/{id}/escalate": {
+      "post": {
+        "operationId": "escalateDispute",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "dsp_01JD8Q5C9V2M4X7P",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EscalateDisputeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated dispute.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/DisputeDetailDto"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMetaDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body is invalid (`validation_error`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No or invalid token (`unauthorized`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The role lacks the permission (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No dispute with that ID (`not_found`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Not allowed from the current status (`invalid_state`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Escalate a dispute",
+        "tags": [
+          "disputes"
+        ]
+      }
+    },
+    "/api/v1/disputes/{id}/message": {
+      "patch": {
+        "operationId": "editDisputeMessage",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "dsp_01JD8Q5C9V2M4X7P",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated dispute.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/DisputeDetailDto"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMetaDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body is invalid (`validation_error`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No or invalid token (`unauthorized`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The role lacks the permission (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No dispute with that ID (`not_found`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The dispute is finished or has no message yet (`invalid_state`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Edit the customer message",
+        "tags": [
+          "disputes"
+        ]
+      }
+    },
+    "/api/v1/disputes/{id}/retry": {
+      "post": {
+        "operationId": "retryDispute",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "dsp_01JD8Q5C9V2M4X7P",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The dispute, queued again.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/DisputeDetailDto"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMetaDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No or invalid token (`unauthorized`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The role lacks the permission (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No dispute with that ID (`not_found`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Only failed disputes can be retried (`invalid_state`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Retry a failed investigation",
+        "tags": [
+          "disputes"
+        ]
+      }
+    },
+    "/api/v1/metrics": {
+      "get": {
+        "operationId": "getMetrics",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The current metrics.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/MetricsDto"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMetaDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No or invalid token (`unauthorized`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The role lacks the permission (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Queue and agent metrics for the overview",
+        "tags": [
+          "metrics"
+        ]
+      }
+    },
+    "/api/v1/audit/investigations": {
+      "get": {
+        "operationId": "listInvestigationAudit",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of investigations.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/InvestigationAuditDto"
+                      }
+                    },
+                    "meta": {
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/ResponseMetaDto"
+                        },
+                        {
+                          "$ref": "#/components/schemas/PaginationMetaDto"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A query parameter is invalid (`validation_error`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No or invalid token (`unauthorized`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The role lacks the permission (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Every investigation, newest first",
+        "tags": [
+          "audit"
+        ]
+      }
+    },
+    "/api/v1/audit/actions": {
+      "get": {
+        "operationId": "listActionAudit",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of analyst actions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ActionAuditDto"
+                      }
+                    },
+                    "meta": {
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/ResponseMetaDto"
+                        },
+                        {
+                          "$ref": "#/components/schemas/PaginationMetaDto"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A query parameter is invalid (`validation_error`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No or invalid token (`unauthorized`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The role lacks the permission (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Every analyst action, newest first",
+        "tags": [
+          "audit"
+        ]
+      }
+    },
+    "/api/v1/audit/access": {
+      "get": {
+        "operationId": "listAccessAudit",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of access events.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AccessAuditDto"
+                      }
+                    },
+                    "meta": {
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/ResponseMetaDto"
+                        },
+                        {
+                          "$ref": "#/components/schemas/PaginationMetaDto"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A query parameter is invalid (`validation_error`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No or invalid token (`unauthorized`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The role lacks the permission (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Every access change, newest first",
+        "tags": [
+          "audit"
+        ]
+      }
+    },
+    "/api/v1/team": {
+      "get": {
+        "operationId": "listStaff",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "All staff.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/StaffMemberDto"
+                      }
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMetaDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No or invalid token (`unauthorized`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The role lacks the permission (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Everyone who can sign in",
+        "tags": [
+          "team"
+        ]
+      },
+      "post": {
+        "operationId": "inviteStaff",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteStaffDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Invited.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/StaffMemberDto"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMetaDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body is invalid (`validation_error`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No or invalid token (`unauthorized`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The role lacks the permission (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The email or staff ID is taken (`conflict`, `details.field`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Invite someone",
+        "tags": [
+          "team"
+        ]
+      }
+    },
+    "/api/v1/team/{id}": {
+      "patch": {
+        "description": "Send exactly one of `role` or `status`.",
+        "operationId": "updateStaff",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "usr_01JD8Q5C9V2M4X7P",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStaffDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/StaffMemberDto"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMetaDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body is invalid (`validation_error`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No or invalid token (`unauthorized`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The role lacks the permission (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No one with that ID (`not_found`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Changing your own access (`self_change`) or leaving no active admin (`last_admin`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Change someone's role, or suspend or reinstate them",
+        "tags": [
+          "team"
+        ]
+      }
+    },
+    "/api/v1/demo/submit": {
+      "post": {
+        "operationId": "submitDemoCases",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitDemoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Disputes filed and queued.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/SubmitDemoResultDto"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMetaDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body is invalid (`validation_error`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No or invalid token (`unauthorized`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The role lacks the permission (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "File seeded demo cases as disputes",
+        "tags": [
+          "demo"
+        ]
+      }
+    },
+    "/api/v1/demo/reset": {
+      "post": {
+        "description": "Deletes every dispute and its audit trail, then re-seeds the bank. Staff and settings are kept.",
+        "operationId": "resetDemo",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Reset.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/OkDto"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMetaDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No or invalid token (`unauthorized`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The role lacks the permission (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reset the demo data",
+        "tags": [
+          "demo"
+        ]
+      }
+    },
+    "/api/v1/demo/eval": {
+      "get": {
+        "operationId": "getDemoEval",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Per-case results and the summary.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/EvalDto"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMetaDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No or invalid token (`unauthorized`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The role lacks the permission (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Accuracy of the agent on the demo cases",
+        "tags": [
+          "demo"
         ]
       }
     }
   },
   "info": {
     "title": "resolve API",
-    "description": "Dispute investigation for banks: file disputes, follow the agent, act on its recommendations.\n\n**Envelope.** Every response is wrapped.\n\n- Success: `{ \"success\": true, \"data\": …, \"meta\": { \"requestId\", \"timestamp\" } }`. Paged lists add `page`, `pageSize` and `total` to `meta`.\n- Failure: `{ \"success\": false, \"error\": { \"code\", \"message\", \"fieldErrors\"?, \"details\"? }, \"meta\": { \"requestId\", \"timestamp\" } }`.\n\n**Money** is integer kobo (`amountMinor`). **Request IDs**: send `x-request-id` to correlate, or one is generated and returned in the same header.",
+    "description": "Dispute investigation for banks: file disputes, follow the agent, act on its recommendations.\n\n**Envelope.** Every response is wrapped.\n\n- Success: `{ \"success\": true, \"data\": …, \"meta\": { \"requestId\", \"timestamp\" } }`. Paged lists add `page`, `pageSize` and `total` to `meta`.\n- Failure: `{ \"success\": false, \"error\": { \"code\", \"message\", \"fieldErrors\"?, \"details\"? }, \"meta\": { \"requestId\", \"timestamp\" } }`.\n\n**Auth.** Sign in with `POST /auth/sign-in`, then send `Authorization: Bearer <token>` on every other route except `/health`.\n\n**Money** is integer kobo (`amountMinor`). **Request IDs**: send `x-request-id` to correlate, or one is generated and returned in the same header.",
     "version": "1.0.0",
     "contact": {}
   },
@@ -313,6 +2638,13 @@
     }
   ],
   "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
     "schemas": {
       "FieldErrorDto": {
         "type": "object",
@@ -418,6 +2750,454 @@
           "meta"
         ]
       },
+      "PolicySettingsDto": {
+        "type": "object",
+        "properties": {
+          "confidenceThreshold": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "example": 0.9
+          },
+          "valueCapMinor": {
+            "type": "number",
+            "description": "Largest amount, in kobo, that can be auto-resolved.",
+            "example": 5000000
+          },
+          "autoTypes": {
+            "type": "array",
+            "example": [
+              "failed_transfer_debit",
+              "duplicate_charge"
+            ],
+            "items": {
+              "type": "string",
+              "enum": [
+                "failed_transfer_debit",
+                "duplicate_charge",
+                "unauthorised_payment",
+                "merchant_non_delivery",
+                "legitimate_transaction",
+                "unknown"
+              ]
+            }
+          },
+          "reviewTypes": {
+            "type": "array",
+            "example": [
+              "unauthorised_payment",
+              "merchant_non_delivery"
+            ],
+            "items": {
+              "type": "string",
+              "enum": [
+                "failed_transfer_debit",
+                "duplicate_charge",
+                "unauthorised_payment",
+                "merchant_non_delivery",
+                "legitimate_transaction",
+                "unknown"
+              ]
+            }
+          },
+          "minEvidenceForAuto": {
+            "type": "number",
+            "minimum": 1,
+            "example": 2
+          },
+          "executionMode": {
+            "type": "string",
+            "enum": [
+              "execute",
+              "recommend_only"
+            ],
+            "example": "execute"
+          }
+        },
+        "required": [
+          "confidenceThreshold",
+          "valueCapMinor",
+          "autoTypes",
+          "reviewTypes",
+          "minEvidenceForAuto",
+          "executionMode"
+        ]
+      },
+      "AgentSettingsDto": {
+        "type": "object",
+        "properties": {
+          "maxSteps": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 30,
+            "example": 8
+          },
+          "duplicateWindowMinutes": {
+            "type": "number",
+            "minimum": 1,
+            "example": 10
+          }
+        },
+        "required": [
+          "maxSteps",
+          "duplicateWindowMinutes"
+        ]
+      },
+      "AiSettingsDto": {
+        "type": "object",
+        "properties": {
+          "activeProfile": {
+            "type": "string",
+            "example": "hosted"
+          }
+        },
+        "required": [
+          "activeProfile"
+        ]
+      },
+      "SettingsDto": {
+        "type": "object",
+        "properties": {
+          "policy": {
+            "$ref": "#/components/schemas/PolicySettingsDto"
+          },
+          "agent": {
+            "$ref": "#/components/schemas/AgentSettingsDto"
+          },
+          "ai": {
+            "$ref": "#/components/schemas/AiSettingsDto"
+          }
+        },
+        "required": [
+          "policy",
+          "agent",
+          "ai"
+        ]
+      },
+      "PaginationMetaDto": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "number",
+            "description": "Current page, starting at 1.",
+            "example": 1,
+            "minimum": 1
+          },
+          "pageSize": {
+            "type": "number",
+            "description": "Items per page.",
+            "example": 25,
+            "minimum": 1,
+            "maximum": 100
+          },
+          "total": {
+            "type": "number",
+            "description": "Total items across all pages.",
+            "example": 312,
+            "minimum": 0
+          }
+        },
+        "required": [
+          "page",
+          "pageSize",
+          "total"
+        ]
+      },
+      "UpdatePolicySettingsDto": {
+        "type": "object",
+        "properties": {
+          "confidenceThreshold": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "valueCapMinor": {
+            "type": "number",
+            "minimum": 0
+          },
+          "autoTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "failed_transfer_debit",
+                "duplicate_charge",
+                "unauthorised_payment",
+                "merchant_non_delivery",
+                "legitimate_transaction",
+                "unknown"
+              ]
+            }
+          },
+          "reviewTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "failed_transfer_debit",
+                "duplicate_charge",
+                "unauthorised_payment",
+                "merchant_non_delivery",
+                "legitimate_transaction",
+                "unknown"
+              ]
+            }
+          },
+          "minEvidenceForAuto": {
+            "type": "number",
+            "minimum": 1
+          },
+          "executionMode": {
+            "type": "string",
+            "enum": [
+              "execute",
+              "recommend_only"
+            ]
+          }
+        }
+      },
+      "UpdateAgentSettingsDto": {
+        "type": "object",
+        "properties": {
+          "maxSteps": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 30
+          },
+          "duplicateWindowMinutes": {
+            "type": "number",
+            "minimum": 1
+          }
+        }
+      },
+      "UpdateAiSettingsDto": {
+        "type": "object",
+        "properties": {
+          "activeProfile": {
+            "type": "string",
+            "description": "Must be a configured profile name."
+          }
+        }
+      },
+      "UpdateSettingsDto": {
+        "type": "object",
+        "properties": {
+          "policy": {
+            "$ref": "#/components/schemas/UpdatePolicySettingsDto"
+          },
+          "agent": {
+            "$ref": "#/components/schemas/UpdateAgentSettingsDto"
+          },
+          "ai": {
+            "$ref": "#/components/schemas/UpdateAiSettingsDto"
+          }
+        }
+      },
+      "AiProfileDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "hosted"
+          },
+          "label": {
+            "type": "string",
+            "example": "Hosted"
+          },
+          "kind": {
+            "type": "string",
+            "example": "hosted",
+            "description": "`hosted` or `onprem`."
+          },
+          "model": {
+            "type": "string",
+            "example": "llama-3.3-70b"
+          },
+          "endpoint": {
+            "type": "string",
+            "example": "gateway.ai.example",
+            "description": "Endpoint host only; keys are never returned."
+          },
+          "active": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "name",
+          "label",
+          "kind",
+          "model",
+          "endpoint",
+          "active"
+        ]
+      },
+      "AiProfileTestDto": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "example": true
+          },
+          "latencyMs": {
+            "type": "number",
+            "example": 412
+          },
+          "model": {
+            "type": "string",
+            "example": "llama-3.3-70b"
+          },
+          "error": {
+            "type": "string",
+            "example": "The model returned HTTP 401."
+          }
+        },
+        "required": [
+          "ok",
+          "latencyMs",
+          "model"
+        ]
+      },
+      "SessionUserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "usr_01JD8Q5C9V2M4X7P"
+          },
+          "email": {
+            "type": "string",
+            "example": "ada@bank.example"
+          },
+          "name": {
+            "type": "string",
+            "example": "Ada Okafor"
+          },
+          "staffId": {
+            "type": "string",
+            "example": "100234"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "analyst",
+              "viewer"
+            ],
+            "example": "analyst"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "staffId",
+          "role"
+        ]
+      },
+      "SignInResultDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Send as `Authorization: Bearer <token>`."
+          },
+          "expiresAt": {
+            "type": "string",
+            "example": "2026-11-25T22:00:00.000Z"
+          },
+          "user": {
+            "$ref": "#/components/schemas/SessionUserDto"
+          }
+        },
+        "required": [
+          "token",
+          "expiresAt",
+          "user"
+        ]
+      },
+      "SignInDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "ada@bank.example",
+            "maxLength": 254
+          },
+          "staffId": {
+            "type": "string",
+            "example": "100234",
+            "description": "4 to 8 digits."
+          }
+        },
+        "required": [
+          "email",
+          "staffId"
+        ]
+      },
+      "MeDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "usr_01JD8Q5C9V2M4X7P"
+          },
+          "email": {
+            "type": "string",
+            "example": "ada@bank.example"
+          },
+          "name": {
+            "type": "string",
+            "example": "Ada Okafor"
+          },
+          "staffId": {
+            "type": "string",
+            "example": "100234"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "analyst",
+              "viewer"
+            ],
+            "example": "analyst"
+          },
+          "permissions": {
+            "type": "array",
+            "example": [
+              "cases.view",
+              "audit.view",
+              "cases.act"
+            ],
+            "items": {
+              "type": "string",
+              "enum": [
+                "cases.view",
+                "audit.view",
+                "cases.act",
+                "settings.edit",
+                "demo.use",
+                "team.manage"
+              ]
+            }
+          },
+          "lastSignInAt": {
+            "type": "string",
+            "nullable": true,
+            "example": "2026-11-25T10:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "staffId",
+          "role",
+          "permissions",
+          "lastSignInAt"
+        ]
+      },
       "CheckResultDto": {
         "type": "object",
         "properties": {
@@ -510,41 +3290,17 @@
           "checks"
         ]
       },
-      "PaginationMetaDto": {
-        "type": "object",
-        "properties": {
-          "page": {
-            "type": "number",
-            "description": "Current page, starting at 1.",
-            "example": 1,
-            "minimum": 1
-          },
-          "pageSize": {
-            "type": "number",
-            "description": "Items per page.",
-            "example": 25,
-            "minimum": 1,
-            "maximum": 100
-          },
-          "total": {
-            "type": "number",
-            "description": "Total items across all pages.",
-            "example": 312,
-            "minimum": 0
-          }
-        },
-        "required": [
-          "page",
-          "pageSize",
-          "total"
-        ]
-      },
-      "DisputeDto": {
+      "DisputeSummaryDto": {
         "type": "object",
         "properties": {
           "id": {
             "type": "string",
             "example": "dsp_01JD8Q5C9V2M4X7P"
+          },
+          "reference": {
+            "type": "string",
+            "example": "TX-2026-114820",
+            "description": "Transaction reference."
           },
           "transactionId": {
             "type": "string",
@@ -553,6 +3309,11 @@
           "customerId": {
             "type": "string",
             "example": "cus_01JD7Z0A1B2C3D4E"
+          },
+          "customerName": {
+            "type": "string",
+            "example": "Funke A.",
+            "description": "Masked: first name and last initial."
           },
           "reasonCode": {
             "type": "string",
@@ -565,6 +3326,11 @@
             ],
             "example": "failed_transfer"
           },
+          "amountMinor": {
+            "type": "number",
+            "description": "Disputed amount in kobo. ₦40,000.00 is 4000000.",
+            "example": 4000000
+          },
           "status": {
             "type": "string",
             "enum": [
@@ -576,16 +3342,16 @@
               "escalated",
               "failed"
             ],
-            "example": "queued"
+            "example": "resolved"
           },
-          "amountMinor": {
-            "type": "number",
-            "description": "Disputed amount in kobo (integer). ₦40,000.00 is 4000000.",
-            "example": 4000000
-          },
-          "currency": {
+          "resolvedBy": {
             "type": "string",
-            "example": "NGN"
+            "enum": [
+              "agent",
+              "analyst"
+            ],
+            "nullable": true,
+            "example": "agent"
           },
           "classifiedType": {
             "type": "string",
@@ -598,7 +3364,42 @@
               "unknown"
             ],
             "nullable": true,
-            "example": null
+            "example": "failed_transfer_debit"
+          },
+          "confidence": {
+            "type": "number",
+            "nullable": true,
+            "example": 0.96
+          },
+          "fraudSuspected": {
+            "type": "boolean",
+            "example": false
+          },
+          "policyDisposition": {
+            "type": "string",
+            "enum": [
+              "auto_resolve",
+              "needs_review"
+            ],
+            "nullable": true,
+            "example": "auto_resolve"
+          },
+          "slaDueAt": {
+            "type": "string",
+            "example": "2026-11-28T10:00:00.000Z"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-11-25T10:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2026-11-25T10:01:05.000Z"
+          },
+          "customerNotes": {
+            "type": "string",
+            "nullable": true,
+            "example": "I sent 40k to my supplier…"
           },
           "resolutionAction": {
             "type": "string",
@@ -608,42 +3409,40 @@
               "none"
             ],
             "nullable": true,
-            "example": null
+            "example": "reverse_debit"
           },
-          "resolvedBy": {
+          "resolvedAt": {
             "type": "string",
-            "enum": [
-              "agent",
-              "analyst"
-            ],
+            "nullable": true,
+            "example": "2026-11-25T10:01:05.000Z"
+          },
+          "lastError": {
+            "type": "string",
             "nullable": true,
             "example": null
-          },
-          "slaDueAt": {
-            "type": "string",
-            "description": "Resolution deadline (ISO 8601).",
-            "example": "2026-11-28T10:00:00.000Z"
-          },
-          "createdAt": {
-            "type": "string",
-            "example": "2026-11-25T10:00:00.000Z"
-          },
-          "updatedAt": {
-            "type": "string",
-            "example": "2026-11-25T10:00:00.000Z"
           }
         },
         "required": [
           "id",
+          "reference",
           "transactionId",
           "customerId",
+          "customerName",
           "reasonCode",
-          "status",
           "amountMinor",
-          "currency",
+          "status",
+          "resolvedBy",
+          "classifiedType",
+          "confidence",
+          "fraudSuspected",
+          "policyDisposition",
           "slaDueAt",
           "createdAt",
-          "updatedAt"
+          "updatedAt",
+          "customerNotes",
+          "resolutionAction",
+          "resolvedAt",
+          "lastError"
         ]
       },
       "CreateDisputeDto": {
@@ -675,6 +3474,1631 @@
         "required": [
           "transactionId",
           "reasonCode"
+        ]
+      },
+      "DisputeListItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "dsp_01JD8Q5C9V2M4X7P"
+          },
+          "reference": {
+            "type": "string",
+            "example": "TX-2026-114820",
+            "description": "Transaction reference."
+          },
+          "transactionId": {
+            "type": "string",
+            "example": "txn_01JD8Q3W4N7Z2R5K"
+          },
+          "customerId": {
+            "type": "string",
+            "example": "cus_01JD7Z0A1B2C3D4E"
+          },
+          "customerName": {
+            "type": "string",
+            "example": "Funke A.",
+            "description": "Masked: first name and last initial."
+          },
+          "reasonCode": {
+            "type": "string",
+            "enum": [
+              "unauthorised",
+              "duplicate",
+              "failed_transfer",
+              "not_delivered",
+              "other"
+            ],
+            "example": "failed_transfer"
+          },
+          "amountMinor": {
+            "type": "number",
+            "description": "Disputed amount in kobo. ₦40,000.00 is 4000000.",
+            "example": 4000000
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "investigating",
+              "awaiting_review",
+              "resolved",
+              "rejected",
+              "escalated",
+              "failed"
+            ],
+            "example": "resolved"
+          },
+          "resolvedBy": {
+            "type": "string",
+            "enum": [
+              "agent",
+              "analyst"
+            ],
+            "nullable": true,
+            "example": "agent"
+          },
+          "classifiedType": {
+            "type": "string",
+            "enum": [
+              "failed_transfer_debit",
+              "duplicate_charge",
+              "unauthorised_payment",
+              "merchant_non_delivery",
+              "legitimate_transaction",
+              "unknown"
+            ],
+            "nullable": true,
+            "example": "failed_transfer_debit"
+          },
+          "confidence": {
+            "type": "number",
+            "nullable": true,
+            "example": 0.96
+          },
+          "fraudSuspected": {
+            "type": "boolean",
+            "example": false
+          },
+          "policyDisposition": {
+            "type": "string",
+            "enum": [
+              "auto_resolve",
+              "needs_review"
+            ],
+            "nullable": true,
+            "example": "auto_resolve"
+          },
+          "slaDueAt": {
+            "type": "string",
+            "example": "2026-11-28T10:00:00.000Z"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-11-25T10:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2026-11-25T10:01:05.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "reference",
+          "transactionId",
+          "customerId",
+          "customerName",
+          "reasonCode",
+          "amountMinor",
+          "status",
+          "resolvedBy",
+          "classifiedType",
+          "confidence",
+          "fraudSuspected",
+          "policyDisposition",
+          "slaDueAt",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "DisputeCountsDto": {
+        "type": "object",
+        "properties": {
+          "queued": {
+            "type": "number",
+            "example": 3
+          },
+          "investigating": {
+            "type": "number",
+            "example": 1
+          },
+          "awaiting_review": {
+            "type": "number",
+            "example": 4
+          },
+          "resolved": {
+            "type": "number",
+            "example": 28
+          },
+          "rejected": {
+            "type": "number",
+            "example": 3
+          },
+          "escalated": {
+            "type": "number",
+            "example": 1
+          },
+          "failed": {
+            "type": "number",
+            "example": 0
+          }
+        },
+        "required": [
+          "queued",
+          "investigating",
+          "awaiting_review",
+          "resolved",
+          "rejected",
+          "escalated",
+          "failed"
+        ]
+      },
+      "DisputeListMetaDto": {
+        "type": "object",
+        "properties": {
+          "countsByStatus": {
+            "description": "Counts per status for the same search and type filter, ignoring the status filter.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DisputeCountsDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "countsByStatus"
+        ]
+      },
+      "TransactionSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "txn_01JD8Q3W4N7Z2R5K"
+          },
+          "reference": {
+            "type": "string",
+            "example": "TX-2026-114820"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "card_payment",
+              "transfer",
+              "pos",
+              "web"
+            ],
+            "example": "transfer"
+          },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "mobile",
+              "web",
+              "pos",
+              "atm",
+              "ussd"
+            ],
+            "example": "mobile"
+          },
+          "amountMinor": {
+            "type": "number",
+            "example": 4000000
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "successful",
+              "failed",
+              "pending",
+              "reversed"
+            ],
+            "example": "reversed"
+          },
+          "merchantName": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "counterpartyName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Bola S."
+          },
+          "counterpartyBank": {
+            "type": "string",
+            "nullable": true,
+            "example": "Zenith"
+          },
+          "city": {
+            "type": "string",
+            "example": "Abeokuta"
+          },
+          "ipCountry": {
+            "type": "string",
+            "example": "NG"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-11-25T07:12:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "reference",
+          "type",
+          "channel",
+          "amountMinor",
+          "status",
+          "merchantName",
+          "counterpartyName",
+          "counterpartyBank",
+          "city",
+          "ipCountry",
+          "createdAt"
+        ]
+      },
+      "CustomerSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "cus_01JD7Z0A1B2C3D4E"
+          },
+          "name": {
+            "type": "string",
+            "example": "Funke A."
+          },
+          "segment": {
+            "type": "string",
+            "enum": [
+              "retail",
+              "sme"
+            ],
+            "example": "retail"
+          },
+          "homeCity": {
+            "type": "string",
+            "example": "Abeokuta"
+          },
+          "accountAgeDays": {
+            "type": "number",
+            "example": 1460
+          },
+          "riskProfile": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "example": "low"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "segment",
+          "homeCity",
+          "accountAgeDays",
+          "riskProfile"
+        ]
+      },
+      "EvidenceItemDto": {
+        "type": "object",
+        "properties": {
+          "toolCallId": {
+            "type": "string",
+            "example": "stp_01JD8Q6A…"
+          },
+          "claim": {
+            "type": "string",
+            "example": "Debit of ₦40,000 posted, no credit or reversal"
+          }
+        },
+        "required": [
+          "toolCallId",
+          "claim"
+        ]
+      },
+      "InvestigationSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "inv_01JD8Q6…"
+          },
+          "attempt": {
+            "type": "number",
+            "example": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "running",
+              "completed",
+              "failed"
+            ],
+            "example": "completed"
+          },
+          "profile": {
+            "type": "string",
+            "example": "hosted"
+          },
+          "providerKind": {
+            "type": "string",
+            "nullable": true,
+            "example": "hosted"
+          },
+          "model": {
+            "type": "string",
+            "example": "llama-3.3-70b"
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "auto_resolve",
+              "escalate",
+              "reject"
+            ],
+            "nullable": true,
+            "example": "auto_resolve"
+          },
+          "confidence": {
+            "type": "number",
+            "nullable": true,
+            "example": 0.96
+          },
+          "riskLevel": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "nullable": true,
+            "example": "low"
+          },
+          "fraudSuspected": {
+            "type": "boolean",
+            "example": false
+          },
+          "classifiedType": {
+            "type": "string",
+            "enum": [
+              "failed_transfer_debit",
+              "duplicate_charge",
+              "unauthorised_payment",
+              "merchant_non_delivery",
+              "legitimate_transaction",
+              "unknown"
+            ],
+            "nullable": true,
+            "example": "failed_transfer_debit"
+          },
+          "recommendedAction": {
+            "type": "string",
+            "enum": [
+              "reverse_debit",
+              "refund_duplicate",
+              "none",
+              "manual_review"
+            ],
+            "nullable": true,
+            "example": "reverse_debit"
+          },
+          "reasoning": {
+            "type": "string",
+            "nullable": true
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EvidenceItemDto"
+            }
+          },
+          "evidenceProblems": {
+            "description": "Why the evidence failed validation, if it did.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "customerMessage": {
+            "type": "string",
+            "nullable": true
+          },
+          "policyDisposition": {
+            "type": "string",
+            "enum": [
+              "auto_resolve",
+              "needs_review"
+            ],
+            "nullable": true,
+            "example": "auto_resolve"
+          },
+          "policyReasons": {
+            "type": "array",
+            "example": [],
+            "items": {
+              "type": "string",
+              "enum": [
+                "evidence_validation_failed",
+                "fraud_suspected",
+                "review_type",
+                "above_value_cap",
+                "rejection_needs_confirmation",
+                "agent_escalated",
+                "low_confidence",
+                "type_not_auto_eligible",
+                "action_type_mismatch",
+                "insufficient_evidence",
+                "recommend_only_mode",
+                "execution_blocked"
+              ]
+            }
+          },
+          "evidenceValid": {
+            "type": "boolean",
+            "example": true
+          },
+          "stepsCount": {
+            "type": "number",
+            "example": 9
+          },
+          "tokensIn": {
+            "type": "number",
+            "example": 10451
+          },
+          "tokensOut": {
+            "type": "number",
+            "example": 1085
+          },
+          "error": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "startedAt": {
+            "type": "string",
+            "example": "2026-11-25T10:00:01.000Z"
+          },
+          "finishedAt": {
+            "type": "string",
+            "nullable": true,
+            "example": "2026-11-25T10:01:04.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "attempt",
+          "status",
+          "profile",
+          "providerKind",
+          "model",
+          "outcome",
+          "confidence",
+          "riskLevel",
+          "fraudSuspected",
+          "classifiedType",
+          "recommendedAction",
+          "reasoning",
+          "evidence",
+          "evidenceProblems",
+          "customerMessage",
+          "policyDisposition",
+          "policyReasons",
+          "evidenceValid",
+          "stepsCount",
+          "tokensIn",
+          "tokensOut",
+          "error",
+          "startedAt",
+          "finishedAt"
+        ]
+      },
+      "AnalystActionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "act_01JD…"
+          },
+          "actorEmail": {
+            "type": "string",
+            "example": "ada@bank.example"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "approve",
+              "override",
+              "escalate",
+              "edit_message",
+              "retry"
+            ],
+            "example": "override"
+          },
+          "overrideAction": {
+            "type": "string",
+            "enum": [
+              "reverse_debit",
+              "refund_duplicate",
+              "none"
+            ],
+            "nullable": true,
+            "example": "none"
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true,
+            "example": "Customer confirmed the merchant delivered."
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-11-25T10:05:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "actorEmail",
+          "action",
+          "overrideAction",
+          "reason",
+          "createdAt"
+        ]
+      },
+      "DisputeDetailDto": {
+        "type": "object",
+        "properties": {
+          "dispute": {
+            "$ref": "#/components/schemas/DisputeSummaryDto"
+          },
+          "transaction": {
+            "$ref": "#/components/schemas/TransactionSummaryDto"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/CustomerSummaryDto"
+          },
+          "investigation": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InvestigationSummaryDto"
+              }
+            ]
+          },
+          "analystActions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AnalystActionDto"
+            }
+          }
+        },
+        "required": [
+          "dispute",
+          "transaction",
+          "customer",
+          "investigation",
+          "analystActions"
+        ]
+      },
+      "TraceStepDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "stp_01JD8Q6B…"
+          },
+          "seq": {
+            "type": "number",
+            "example": 3
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "model",
+              "tool",
+              "system"
+            ],
+            "example": "tool"
+          },
+          "toolName": {
+            "type": "string",
+            "nullable": true,
+            "example": "get_settlement_status"
+          },
+          "title": {
+            "type": "string",
+            "example": "Get settlement status"
+          },
+          "summary": {
+            "type": "string",
+            "example": "Settlement failed: beneficiary bank timeout, 182 minutes ago"
+          },
+          "ok": {
+            "type": "boolean",
+            "example": true
+          },
+          "input": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "output": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "latencyMs": {
+            "type": "number",
+            "example": 41
+          },
+          "prevHash": {
+            "type": "string",
+            "example": "9b1f…"
+          },
+          "hash": {
+            "type": "string",
+            "example": "e8d2…"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-11-25T10:00:05.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "seq",
+          "kind",
+          "toolName",
+          "title",
+          "summary",
+          "ok",
+          "input",
+          "output",
+          "latencyMs",
+          "prevHash",
+          "hash",
+          "createdAt"
+        ]
+      },
+      "TraceDto": {
+        "type": "object",
+        "properties": {
+          "investigation": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InvestigationSummaryDto"
+              }
+            ]
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TraceStepDto"
+            }
+          },
+          "done": {
+            "type": "boolean",
+            "description": "True once the investigation has completed or failed.",
+            "example": false
+          }
+        },
+        "required": [
+          "investigation",
+          "steps",
+          "done"
+        ]
+      },
+      "ChainVerificationDto": {
+        "type": "object",
+        "properties": {
+          "valid": {
+            "type": "boolean",
+            "example": true
+          },
+          "checked": {
+            "type": "number",
+            "example": 9
+          },
+          "brokenAtSeq": {
+            "type": "number",
+            "example": 4,
+            "description": "The first step that fails verification."
+          }
+        },
+        "required": [
+          "valid",
+          "checked"
+        ]
+      },
+      "CaseFileDto": {
+        "type": "object",
+        "properties": {
+          "dispute": {
+            "$ref": "#/components/schemas/DisputeSummaryDto"
+          },
+          "transaction": {
+            "$ref": "#/components/schemas/TransactionSummaryDto"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/CustomerSummaryDto"
+          },
+          "investigation": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InvestigationSummaryDto"
+              }
+            ]
+          },
+          "analystActions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AnalystActionDto"
+            }
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TraceStepDto"
+            }
+          },
+          "chainVerification": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChainVerificationDto"
+              }
+            ]
+          },
+          "generatedAt": {
+            "type": "string",
+            "example": "2026-11-25T10:01:05.000Z"
+          }
+        },
+        "required": [
+          "dispute",
+          "transaction",
+          "customer",
+          "investigation",
+          "analystActions",
+          "steps",
+          "chainVerification",
+          "generatedAt"
+        ]
+      },
+      "ApproveDisputeDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "minLength": 20,
+            "maxLength": 800,
+            "description": "Replaces the customer message before it is sent."
+          }
+        }
+      },
+      "OverrideDisputeDto": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "reverse_debit",
+              "refund_duplicate",
+              "none"
+            ],
+            "example": "none"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 500,
+            "example": "Customer confirmed the merchant delivered."
+          },
+          "message": {
+            "type": "string",
+            "minLength": 20,
+            "maxLength": 800
+          }
+        },
+        "required": [
+          "action",
+          "reason"
+        ]
+      },
+      "EscalateDisputeDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 500,
+            "example": "Needs the fraud team: device seen on two other accounts."
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "EditMessageDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "minLength": 20,
+            "maxLength": 800
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "SlaDto": {
+        "type": "object",
+        "properties": {
+          "atRisk": {
+            "type": "number",
+            "example": 1,
+            "description": "Open disputes due within 12 hours."
+          },
+          "breached": {
+            "type": "number",
+            "example": 0,
+            "description": "Open disputes past their deadline."
+          }
+        },
+        "required": [
+          "atRisk",
+          "breached"
+        ]
+      },
+      "HourCountDto": {
+        "type": "object",
+        "properties": {
+          "hour": {
+            "type": "string",
+            "example": "2026-11-25T09:00:00.000Z"
+          },
+          "count": {
+            "type": "number",
+            "example": 6
+          }
+        },
+        "required": [
+          "hour",
+          "count"
+        ]
+      },
+      "TypeCountDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "example": "failed_transfer_debit"
+          },
+          "count": {
+            "type": "number",
+            "example": 8
+          }
+        },
+        "required": [
+          "type",
+          "count"
+        ]
+      },
+      "OutcomeValuesDto": {
+        "type": "object",
+        "properties": {
+          "auto_resolve": {
+            "type": "number",
+            "example": 6
+          },
+          "needs_review": {
+            "type": "number",
+            "example": 2
+          }
+        },
+        "required": [
+          "auto_resolve",
+          "needs_review"
+        ]
+      },
+      "TypeOutcomesDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "example": "failed_transfer_debit"
+          },
+          "values": {
+            "$ref": "#/components/schemas/OutcomeValuesDto"
+          }
+        },
+        "required": [
+          "type",
+          "values"
+        ]
+      },
+      "ProviderUsageDto": {
+        "type": "object",
+        "properties": {
+          "profile": {
+            "type": "string",
+            "example": "hosted"
+          },
+          "model": {
+            "type": "string",
+            "example": "llama-3.3-70b"
+          },
+          "count": {
+            "type": "number",
+            "example": 40
+          },
+          "avgMs": {
+            "type": "number",
+            "example": 64000
+          }
+        },
+        "required": [
+          "profile",
+          "model",
+          "count",
+          "avgMs"
+        ]
+      },
+      "MetricsDto": {
+        "type": "object",
+        "properties": {
+          "countsByStatus": {
+            "$ref": "#/components/schemas/DisputeCountsDto"
+          },
+          "resolvedCount": {
+            "type": "number",
+            "example": 28
+          },
+          "autoResolutionRate": {
+            "type": "number",
+            "example": 0.68
+          },
+          "reviewRate": {
+            "type": "number",
+            "example": 0.32
+          },
+          "overrideRate": {
+            "type": "number",
+            "example": 0.12
+          },
+          "avgInvestigationMs": {
+            "type": "number",
+            "example": 65500
+          },
+          "p50InvestigationMs": {
+            "type": "number",
+            "example": 61200
+          },
+          "p95InvestigationMs": {
+            "type": "number",
+            "example": 104000
+          },
+          "sla": {
+            "$ref": "#/components/schemas/SlaDto"
+          },
+          "throughputByHour": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HourCountDto"
+            }
+          },
+          "byType": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TypeCountDto"
+            }
+          },
+          "outcomesByType": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TypeOutcomesDto"
+            }
+          },
+          "providerUsage": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProviderUsageDto"
+            }
+          },
+          "oldestReviewAt": {
+            "type": "string",
+            "nullable": true,
+            "example": "2026-11-25T08:12:00.000Z"
+          }
+        },
+        "required": [
+          "countsByStatus",
+          "resolvedCount",
+          "autoResolutionRate",
+          "reviewRate",
+          "overrideRate",
+          "avgInvestigationMs",
+          "p50InvestigationMs",
+          "p95InvestigationMs",
+          "sla",
+          "throughputByHour",
+          "byType",
+          "outcomesByType",
+          "providerUsage",
+          "oldestReviewAt"
+        ]
+      },
+      "InvestigationAuditDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "inv_01JD…"
+          },
+          "disputeId": {
+            "type": "string",
+            "example": "dsp_01JD…"
+          },
+          "model": {
+            "type": "string",
+            "example": "llama-3.3-70b"
+          },
+          "profile": {
+            "type": "string",
+            "example": "hosted"
+          },
+          "providerKind": {
+            "type": "string",
+            "nullable": true,
+            "example": "hosted"
+          },
+          "stepsCount": {
+            "type": "number",
+            "example": 9
+          },
+          "durationMs": {
+            "type": "number",
+            "nullable": true,
+            "example": 63000
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "running",
+              "completed",
+              "failed"
+            ],
+            "example": "completed"
+          },
+          "startedAt": {
+            "type": "string",
+            "example": "2026-11-25T10:00:01.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "disputeId",
+          "model",
+          "profile",
+          "providerKind",
+          "stepsCount",
+          "durationMs",
+          "status",
+          "startedAt"
+        ]
+      },
+      "ActionAuditDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "act_01JD…"
+          },
+          "actorEmail": {
+            "type": "string",
+            "example": "ada@bank.example"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "approve",
+              "override",
+              "escalate",
+              "edit_message",
+              "retry"
+            ],
+            "example": "override"
+          },
+          "overrideAction": {
+            "type": "string",
+            "enum": [
+              "reverse_debit",
+              "refund_duplicate",
+              "none"
+            ],
+            "nullable": true,
+            "example": "none"
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true,
+            "example": "Customer confirmed the merchant delivered."
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-11-25T10:05:00.000Z"
+          },
+          "disputeId": {
+            "type": "string",
+            "example": "dsp_01JD…"
+          }
+        },
+        "required": [
+          "id",
+          "actorEmail",
+          "action",
+          "overrideAction",
+          "reason",
+          "createdAt",
+          "disputeId"
+        ]
+      },
+      "AccessAuditDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "acc_01JD…"
+          },
+          "actorEmail": {
+            "type": "string",
+            "example": "admin@bank.example"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "invited",
+              "role_changed",
+              "suspended",
+              "reinstated",
+              "first_sign_in",
+              "demo_reset"
+            ],
+            "example": "role_changed"
+          },
+          "targetEmail": {
+            "type": "string",
+            "example": "ada@bank.example"
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true,
+            "example": "analyst → admin"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-11-25T10:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "actorEmail",
+          "action",
+          "targetEmail",
+          "detail",
+          "createdAt"
+        ]
+      },
+      "StaffMemberDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "usr_01JD…"
+          },
+          "staffId": {
+            "type": "string",
+            "example": "100234"
+          },
+          "name": {
+            "type": "string",
+            "example": "Ada Okafor"
+          },
+          "email": {
+            "type": "string",
+            "example": "ada@bank.example"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "analyst",
+              "viewer"
+            ],
+            "example": "analyst"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "invited",
+              "active",
+              "suspended"
+            ],
+            "example": "active"
+          },
+          "invitedBy": {
+            "type": "string",
+            "nullable": true,
+            "example": "admin@bank.example"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-11-25T10:00:00.000Z"
+          },
+          "lastSignInAt": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          }
+        },
+        "required": [
+          "id",
+          "staffId",
+          "name",
+          "email",
+          "role",
+          "status",
+          "invitedBy",
+          "createdAt",
+          "lastSignInAt"
+        ]
+      },
+      "InviteStaffDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100,
+            "example": "Ada Okafor"
+          },
+          "email": {
+            "type": "string",
+            "example": "ada@bank.example"
+          },
+          "staffId": {
+            "type": "string",
+            "example": "100234"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "analyst",
+              "viewer"
+            ],
+            "example": "analyst"
+          }
+        },
+        "required": [
+          "name",
+          "email",
+          "staffId",
+          "role"
+        ]
+      },
+      "UpdateStaffDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "analyst",
+              "viewer"
+            ],
+            "description": "Send exactly one of `role` or `status`."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "suspended",
+              "active"
+            ],
+            "description": "Send exactly one of `role` or `status`."
+          }
+        }
+      },
+      "SubmitDemoResultDto": {
+        "type": "object",
+        "properties": {
+          "created": {
+            "type": "number",
+            "example": 5
+          },
+          "disputeIds": {
+            "example": [
+              "dsp_01JD…"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "remaining": {
+            "type": "number",
+            "example": 35
+          }
+        },
+        "required": [
+          "created",
+          "disputeIds",
+          "remaining"
+        ]
+      },
+      "SubmitDemoDto": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 40,
+            "default": 5
+          },
+          "types": {
+            "type": "array",
+            "description": "Only cases expected to be these types.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "failed_transfer_debit",
+                "duplicate_charge",
+                "unauthorised_payment",
+                "merchant_non_delivery",
+                "legitimate_transaction",
+                "unknown"
+              ]
+            }
+          },
+          "all": {
+            "type": "boolean",
+            "description": "Submit every remaining case."
+          }
+        }
+      },
+      "OkDto": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "ok"
+        ]
+      },
+      "EvalRowDto": {
+        "type": "object",
+        "properties": {
+          "demoCaseId": {
+            "type": "string",
+            "example": "dmo_01"
+          },
+          "disputeId": {
+            "type": "string",
+            "nullable": true
+          },
+          "scenario": {
+            "type": "string",
+            "example": "failed_transfer"
+          },
+          "status": {
+            "type": "string",
+            "nullable": true,
+            "example": "resolved"
+          },
+          "pending": {
+            "type": "boolean",
+            "example": false
+          },
+          "expectedType": {
+            "type": "string",
+            "example": "failed_transfer_debit"
+          },
+          "actualType": {
+            "type": "string",
+            "nullable": true
+          },
+          "expectedDisposition": {
+            "type": "string",
+            "example": "auto_resolve"
+          },
+          "actualDisposition": {
+            "type": "string",
+            "nullable": true
+          },
+          "typeMatch": {
+            "type": "boolean"
+          },
+          "dispositionMatch": {
+            "type": "boolean"
+          },
+          "match": {
+            "type": "boolean"
+          },
+          "evidenceValid": {
+            "type": "boolean"
+          },
+          "durationMs": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "demoCaseId",
+          "disputeId",
+          "scenario",
+          "status",
+          "pending",
+          "expectedType",
+          "actualType",
+          "expectedDisposition",
+          "actualDisposition",
+          "typeMatch",
+          "dispositionMatch",
+          "match",
+          "evidenceValid",
+          "durationMs"
+        ]
+      },
+      "ScenarioEvalDto": {
+        "type": "object",
+        "properties": {
+          "scenario": {
+            "type": "string",
+            "example": "failed_transfer"
+          },
+          "total": {
+            "type": "number",
+            "example": 8
+          },
+          "classificationAccuracy": {
+            "type": "number",
+            "example": 1
+          },
+          "dispositionAccuracy": {
+            "type": "number",
+            "example": 1
+          }
+        },
+        "required": [
+          "scenario",
+          "total",
+          "classificationAccuracy",
+          "dispositionAccuracy"
+        ]
+      },
+      "ModelCountDto": {
+        "type": "object",
+        "properties": {
+          "profile": {
+            "type": "string",
+            "example": "hosted"
+          },
+          "model": {
+            "type": "string",
+            "example": "llama-3.3-70b"
+          },
+          "count": {
+            "type": "number",
+            "example": 40
+          }
+        },
+        "required": [
+          "profile",
+          "model",
+          "count"
+        ]
+      },
+      "EvalSummaryDto": {
+        "type": "object",
+        "properties": {
+          "totalCases": {
+            "type": "number"
+          },
+          "submitted": {
+            "type": "number"
+          },
+          "pending": {
+            "type": "number"
+          },
+          "evaluated": {
+            "type": "number"
+          },
+          "classificationAccuracy": {
+            "type": "number"
+          },
+          "dispositionAccuracy": {
+            "type": "number"
+          },
+          "evidenceValidityRate": {
+            "type": "number"
+          },
+          "avgInvestigationMs": {
+            "type": "number"
+          },
+          "p95InvestigationMs": {
+            "type": "number"
+          },
+          "byScenario": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScenarioEvalDto"
+            }
+          },
+          "models": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModelCountDto"
+            }
+          }
+        },
+        "required": [
+          "totalCases",
+          "submitted",
+          "pending",
+          "evaluated",
+          "classificationAccuracy",
+          "dispositionAccuracy",
+          "evidenceValidityRate",
+          "avgInvestigationMs",
+          "p95InvestigationMs",
+          "byScenario",
+          "models"
+        ]
+      },
+      "EvalDto": {
+        "type": "object",
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EvalRowDto"
+            }
+          },
+          "accuracy": {
+            "type": "number",
+            "example": 0.975,
+            "description": "Share of evaluated cases where type and disposition both match."
+          },
+          "summary": {
+            "$ref": "#/components/schemas/EvalSummaryDto"
+          }
+        },
+        "required": [
+          "rows",
+          "accuracy",
+          "summary"
         ]
       }
     }

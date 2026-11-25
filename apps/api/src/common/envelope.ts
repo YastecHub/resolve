@@ -16,6 +16,8 @@ export interface Paginated<T> {
   page: number;
   pageSize: number;
   total: number;
+  /** Extra list-level fields, merged into `meta` (for example `countsByStatus`). */
+  extraMeta?: Record<string, unknown>;
 }
 
 export function requestMeta(req: Request): ResponseMeta {

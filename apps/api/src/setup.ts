@@ -29,11 +29,14 @@ export function buildOpenApi(app: INestApplication): OpenAPIObject {
         '- Success: `{ "success": true, "data": …, "meta": { "requestId", "timestamp" } }`. Paged lists add `page`, `pageSize` and `total` to `meta`.',
         '- Failure: `{ "success": false, "error": { "code", "message", "fieldErrors"?, "details"? }, "meta": { "requestId", "timestamp" } }`.',
         '',
+        '**Auth.** Sign in with `POST /auth/sign-in`, then send `Authorization: Bearer <token>` on every other route except `/health`.',
+        '',
         '**Money** is integer kobo (`amountMinor`). **Request IDs**: send `x-request-id` to correlate, or one is generated and returned in the same header.',
       ].join('\n'),
     )
     .setVersion(process.env.APP_VERSION ?? 'dev')
     .addServer('/')
+    .addBearerAuth()
     .build();
   return SwaggerModule.createDocument(app, config, {
     extraModels: [ErrorResponseDto],

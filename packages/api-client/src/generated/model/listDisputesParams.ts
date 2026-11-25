@@ -9,14 +9,28 @@
  * - Success: `{ "success": true, "data": …, "meta": { "requestId", "timestamp" } }`. Paged lists add `page`, `pageSize` and `total` to `meta`.
  * - Failure: `{ "success": false, "error": { "code", "message", "fieldErrors"?, "details"? }, "meta": { "requestId", "timestamp" } }`.
  *
+ * **Auth.** Sign in with `POST /auth/sign-in`, then send `Authorization: Bearer <token>` on every other route except `/health`.
+ *
  * **Money** is integer kobo (`amountMinor`). **Request IDs**: send `x-request-id` to correlate, or one is generated and returned in the same header.
  * OpenAPI spec version: 1.0.0
  */
+import type { ListDisputesOrder } from './listDisputesOrder';
+import type { ListDisputesSort } from './listDisputesSort';
 import type { ListDisputesStatusItem } from './listDisputesStatusItem';
+import type { ListDisputesTypeItem } from './listDisputesTypeItem';
 
 export type ListDisputesParams = {
   /** Only disputes in these statuses. Repeat the parameter for several. */
   status?: ListDisputesStatusItem[];
+  /** Only disputes whose latest investigation classified them as one of these types. */
+  type?: ListDisputesTypeItem[];
+  /**
+   * Matches the dispute ID, transaction reference, customer ID or customer name.
+   * @maxLength 100
+   */
+  q?: string;
+  sort?: ListDisputesSort;
+  order?: ListDisputesOrder;
   /** @minimum 1 */
   page?: number;
   /**
