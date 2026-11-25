@@ -1,0 +1,8 @@
+node_modules
+dist
+build
+.react-router
+coverage
+pnpm-lock.yaml
+packages/api-client/src/generated
+apps/api/openapi.json
