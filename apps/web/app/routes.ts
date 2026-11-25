@@ -9,6 +9,7 @@ export default [
     route('cases/:id', 'routes/dashboard.cases.$id.tsx'),
     route('settings', 'routes/dashboard.settings.tsx'),
     route('audit', 'routes/dashboard.audit.tsx'),
+    route('team', 'routes/dashboard.team.tsx'),
     route('*', 'routes/dashboard.not-found.tsx'),
   ]),
   route('design', 'routes/design.tsx'),
