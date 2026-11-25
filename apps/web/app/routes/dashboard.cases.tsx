@@ -17,11 +17,7 @@ import { Tabs, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import { TablePagination } from '~/components/ui/table-pagination';
 import { TYPE_LABELS } from '~/lib/labels';
 import { paths } from '~/lib/paths';
-import {
-  PAGE_SIZES,
-  useCasesParams,
-  type CasesParams,
-} from '~/lib/use-cases-params';
+import { PAGE_SIZES, useCasesParams, type CasesParams } from '~/lib/use-cases-params';
 import { useDisputes, useMe, useMetrics } from '~/design/screens/data/hooks';
 import type { DisputeListItem } from '~/design/screens/data/types';
 
