@@ -1,31 +1,65 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  approveDispute,
+  editDisputeMessage,
+  escalateDispute,
+  getConfig,
+  getDispute,
+  getDisputeCaseFile,
+  getDisputeTrace,
   getMe,
   listDisputes,
+  overrideDispute,
+  retryDispute,
+  verifyDisputeChain,
   getMetrics,
   listAiProfiles,
   signIn as signInRequest,
   testAiProfile,
   updateConfig,
   type AiProfileDto,
+  type AnalystActionDto,
+  type CaseFileDto,
+  type DisputeDetailDto,
+  type DisputeSummaryDto,
+  type InvestigationSummaryDto,
+  type OverrideDisputeDto,
+  type SettingsDto,
+  type TraceStepDto,
+  type TransactionSummaryDto,
   type DisputeListItemDto,
   type ListDisputesParams,
   type ListDisputesSort,
   type MeDto,
   type MetricsDto,
 } from '@resolve/api-client';
-import type { AiProfileKind, ClassifiedType, DisputeStatus } from '@resolve/shared';
+import type {
+  AiProfileKind,
+  ClassifiedType,
+  DisputeStatus,
+  ResolutionAction,
+} from '@resolve/shared';
 import { STAFF_SIGN_IN } from '~/lib/staff-sign-in';
 import { setToken } from '~/lib/session';
 import type {
   AiProfile,
   AiProfileTestResult,
+  AnalystActionRow,
+  CaseFile,
+  DisputeDetail,
   DisputeListItem,
   DisputeQuery,
   DisputeSortField,
+  DisputeSummary,
+  InvestigationSummary,
   MeResponse,
   Metrics,
   Page,
+  PolicyConfig,
+  TraceResponse,
+  TraceStepRow,
+  TransactionSummary,
+  VerifyResponse,
 } from './types';
 
 const ACTIVE = new Set<string>(['queued', 'investigating']);
@@ -218,5 +252,207 @@ export function useDisputeSearch(q: string) {
     enabled: q.trim().length >= 2,
     placeholderData: keepPreviousData,
     staleTime: 2_000,
+  });
+}
+
+const parse = (iso: string) => Date.parse(iso);
+const parseOrNull = (iso: string | null) => (iso ? Date.parse(iso) : null);
+
+function toSummary(d: DisputeSummaryDto): DisputeSummary {
+  return {
+    ...d,
+    slaDueAt: parse(d.slaDueAt),
+    createdAt: parse(d.createdAt),
+    updatedAt: parse(d.updatedAt),
+    resolvedAt: parseOrNull(d.resolvedAt),
+  };
+}
+
+function toTransaction(t: TransactionSummaryDto): TransactionSummary {
+  return { ...t, createdAt: parse(t.createdAt) };
+}
+
+function toInvestigation(i: InvestigationSummaryDto): InvestigationSummary {
+  return {
+    ...i,
+    providerKind: i.providerKind as AiProfileKind | null,
+    startedAt: parse(i.startedAt),
+    finishedAt: parseOrNull(i.finishedAt),
+  };
+}
+
+function toAnalystAction(a: AnalystActionDto): AnalystActionRow {
+  return { ...a, createdAt: parse(a.createdAt) };
+}
+
+function toStep(s: TraceStepDto): TraceStepRow {
+  return { ...s, createdAt: parse(s.createdAt) };
+}
+
+function toDetail(d: DisputeDetailDto): DisputeDetail {
+  return {
+    dispute: toSummary(d.dispute),
+    transaction: toTransaction(d.transaction),
+    customer: d.customer,
+    investigation: d.investigation ? toInvestigation(d.investigation) : null,
+    analystActions: d.analystActions.map(toAnalystAction),
+  };
+}
+
+function toCaseFile(d: CaseFileDto): CaseFile {
+  return {
+    ...toDetail(d),
+    steps: d.steps.map(toStep),
+    chainVerification: d.chainVerification,
+    generatedAt: parse(d.generatedAt),
+  };
+}
+
+export async function fetchCaseFile(id: string): Promise<CaseFile> {
+  return toCaseFile((await getDisputeCaseFile(id)).data);
+}
+
+async function fetchVerify(id: string): Promise<VerifyResponse> {
+  return (await verifyDisputeChain(id)).data;
+}
+
+export function useDispute(id: string) {
+  return useQuery({
+    queryKey: keys.dispute(id),
+    queryFn: async () => toDetail((await getDispute(id)).data),
+    refetchInterval: (state) => {
+      const status = state.state.data?.dispute.status;
+      return status && ACTIVE.has(status) ? 1_500 : false;
+    },
+  });
+}
+
+export function useTrace(id: string) {
+  const client = useQueryClient();
+  return useQuery({
+    queryKey: keys.trace(id),
+    queryFn: async (): Promise<TraceResponse> => {
+      const previous = client.getQueryData<TraceResponse>(keys.trace(id));
+      const afterSeq = previous?.steps.at(-1)?.seq ?? 0;
+      const { data } = await getDisputeTrace(id, { afterSeq });
+      return {
+        investigation: data.investigation ? toInvestigation(data.investigation) : null,
+        steps: [...(previous?.steps ?? []), ...data.steps.map(toStep)],
+        done: data.done,
+      };
+    },
+    staleTime: 0,
+    refetchInterval: (state) => (state.state.data?.done ? false : 1_500),
+  });
+}
+
+export function useVerify(id: string, enabled: boolean) {
+  return useQuery({
+    queryKey: keys.verify(id),
+    queryFn: () => fetchVerify(id),
+    enabled,
+    staleTime: 30_000,
+  });
+}
+
+function useAfterAction(id: string) {
+  const client = useQueryClient();
+  return (detail?: DisputeDetail) => {
+    if (detail) client.setQueryData(keys.dispute(id), detail);
+    void client.invalidateQueries({ queryKey: ['disputes'] });
+    void client.invalidateQueries({ queryKey: keys.metrics });
+    void client.invalidateQueries({ queryKey: keys.dispute(id) });
+    void client.invalidateQueries({ queryKey: ['audit'] });
+  };
+}
+
+// Show the new status straight away; roll back if the API refuses.
+function useOptimisticStatus(id: string) {
+  const client = useQueryClient();
+  return {
+    onMutate: async (status: DisputeStatus) => {
+      await client.cancelQueries({ queryKey: keys.dispute(id) });
+      const previous = client.getQueryData<DisputeDetail>(keys.dispute(id));
+      client.setQueryData<DisputeDetail>(keys.dispute(id), (detail) =>
+        detail ? { ...detail, dispute: { ...detail.dispute, status } } : detail,
+      );
+      return { previous };
+    },
+    rollback: (previous?: DisputeDetail) => {
+      if (previous) client.setQueryData(keys.dispute(id), previous);
+    },
+  };
+}
+
+export function useApprove(id: string, resolvesTo: DisputeStatus = 'resolved') {
+  const after = useAfterAction(id);
+  const optimistic = useOptimisticStatus(id);
+  return useMutation({
+    mutationFn: async (message?: string) =>
+      toDetail((await approveDispute(id, message ? { message } : {})).data),
+    onMutate: () => optimistic.onMutate(resolvesTo),
+    onError: (_error, _vars, context) => optimistic.rollback(context?.previous),
+    onSuccess: after,
+  });
+}
+
+export function useOverride(id: string) {
+  const after = useAfterAction(id);
+  const optimistic = useOptimisticStatus(id);
+  return useMutation({
+    mutationFn: async (body: { action: ResolutionAction; reason: string; message?: string }) =>
+      toDetail((await overrideDispute(id, body as OverrideDisputeDto)).data),
+    onMutate: (body) => optimistic.onMutate(body.action === 'none' ? 'rejected' : 'resolved'),
+    onError: (_error, _vars, context) => optimistic.rollback(context?.previous),
+    onSuccess: after,
+  });
+}
+
+export function useEscalate(id: string) {
+  const after = useAfterAction(id);
+  const optimistic = useOptimisticStatus(id);
+  return useMutation({
+    mutationFn: async (reason: string) => toDetail((await escalateDispute(id, { reason })).data),
+    onMutate: () => optimistic.onMutate('escalated'),
+    onError: (_error, _vars, context) => optimistic.rollback(context?.previous),
+    onSuccess: after,
+  });
+}
+
+export function useEditMessage(id: string) {
+  const after = useAfterAction(id);
+  return useMutation({
+    mutationFn: async (message: string) =>
+      toDetail((await editDisputeMessage(id, { message })).data),
+    onSuccess: after,
+  });
+}
+
+export function useRetry(id: string) {
+  const client = useQueryClient();
+  const after = useAfterAction(id);
+  return useMutation({
+    mutationFn: async () => toDetail((await retryDispute(id)).data),
+    onSuccess: (detail) => {
+      client.removeQueries({ queryKey: keys.trace(id) });
+      after(detail);
+    },
+  });
+}
+
+// The API config is nested (policy, agent, ai); the screens read a flat policy view.
+function toPolicyConfig(c: SettingsDto): PolicyConfig {
+  return {
+    confidenceThreshold: c.policy.confidenceThreshold,
+    valueCapMinor: c.policy.valueCapMinor,
+    executionMode: c.policy.executionMode,
+    maxSteps: c.agent.maxSteps,
+  };
+}
+
+export function useConfig() {
+  return useQuery({
+    queryKey: keys.config,
+    queryFn: async () => toPolicyConfig((await getConfig()).data),
   });
 }

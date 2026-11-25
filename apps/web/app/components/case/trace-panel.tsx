@@ -2,7 +2,7 @@ import { IntegrityBadge } from '~/components/trace/integrity-badge';
 import { RunningNode, TraceStep } from '~/components/trace/trace-step';
 import { Skeleton } from '~/components/ui/skeleton';
 import { toTraceStep } from '~/lib/case-view';
-import type { TraceStepRow, VerifyResponse } from '~/design/screens/data/types';
+import type { TraceStepRow, VerifyResponse } from '~/api/types';
 
 interface TracePanelProps {
   steps: readonly TraceStepRow[];

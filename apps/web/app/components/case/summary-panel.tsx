@@ -4,7 +4,7 @@ import { RiskPill } from '~/components/ui/risk-pill';
 import { formatAbsolute } from '~/lib/format';
 import { ANALYST_ACTION_LABELS } from '~/lib/labels';
 import { cn } from '~/lib/cn';
-import type { DisputeDetail } from '~/design/screens/data/types';
+import type { DisputeDetail } from '~/api/types';
 
 const REASON_LABELS: Record<DisputeReasonCode, string> = {
   unauthorised: 'Unauthorised',
