@@ -25,6 +25,7 @@ import {
   type InvestigationSummaryDto,
   type OverrideDisputeDto,
   type SettingsDto,
+  type UpdateSettingsDto,
   type TraceStepDto,
   type TransactionSummaryDto,
   type DisputeListItemDto,
@@ -450,9 +451,34 @@ function toPolicyConfig(c: SettingsDto): PolicyConfig {
   };
 }
 
+// The other direction: a flat change from the screen becomes a nested API body.
+function toSettingsUpdate(update: Partial<PolicyConfig>): UpdateSettingsDto {
+  const policy: NonNullable<UpdateSettingsDto['policy']> = {};
+  if (update.confidenceThreshold !== undefined)
+    policy.confidenceThreshold = update.confidenceThreshold;
+  if (update.valueCapMinor !== undefined) policy.valueCapMinor = update.valueCapMinor;
+  if (update.executionMode !== undefined) policy.executionMode = update.executionMode;
+  return {
+    ...(Object.keys(policy).length > 0 ? { policy } : {}),
+    ...(update.maxSteps !== undefined ? { agent: { maxSteps: update.maxSteps } } : {}),
+  };
+}
+
 export function useConfig() {
   return useQuery({
     queryKey: keys.config,
     queryFn: async () => toPolicyConfig((await getConfig()).data),
+  });
+}
+
+export function useSaveConfig() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (update: Partial<PolicyConfig>) =>
+      toPolicyConfig((await updateConfig(toSettingsUpdate(update))).data),
+    onSuccess: (config) => {
+      client.setQueryData(keys.config, config);
+      void client.invalidateQueries({ queryKey: ['disputes'] });
+    },
   });
 }
