@@ -26,18 +26,17 @@ import { shortId } from '~/lib/format';
 import {
   fetchMe,
   keys,
+  useDisputeSearch,
   useMe,
   useMetrics,
   useProfiles,
   useSetProfile,
   useTestProfile,
 } from '~/api/hooks';
-import { USING_SAMPLE_DATA, useDisputeSearch } from '~/design/screens/data/hooks';
 import { queryClient } from '~/lib/query-client';
 import { ACCESS_LOGOUT_URL, clearToken, getToken } from '~/lib/session';
 import { usePermissions } from '~/lib/use-permissions';
 import { ApiError } from '@resolve/api-client';
-import { Banner } from '~/components/ui/banner';
 
 const SIDEBAR_KEY = 'resolve-sidebar-collapsed';
 
@@ -377,12 +376,6 @@ export default function Shell() {
             key={location.pathname}
             className="relative mx-auto max-w-360 animate-rise px-8 py-8 max-xl:px-6"
           >
-            {USING_SAMPLE_DATA ? (
-              <Banner variant="info" className="mb-6" title="Some screens still show sample data">
-                Sign-in, the shell and the metrics are live. The other screens read sample data
-                until each one is wired to the API.
-              </Banner>
-            ) : null}
             <Outlet />
           </div>
         </main>
