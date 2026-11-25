@@ -1,7 +1,7 @@
 import { EmptyState } from '~/components/ui/empty-state';
 import { EvidenceChip } from '~/components/ui/evidence-chip';
 import { toolIcon, toolLabel } from '~/lib/case-view';
-import type { EvidenceItem, TraceStepRow } from '~/design/screens/data/types';
+import type { EvidenceItem, TraceStepRow } from '~/api/types';
 
 interface EvidencePanelProps {
   evidence: readonly EvidenceItem[];

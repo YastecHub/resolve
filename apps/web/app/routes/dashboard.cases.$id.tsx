@@ -23,7 +23,7 @@ import { ACTIONABLE, approveBlockedReason, toDecisionData, toResolution } from '
 import { paths } from '~/lib/paths';
 import { useMediaQuery } from '~/lib/use-media-query';
 import { usePermissions } from '~/lib/use-permissions';
-import { fetchCaseFile } from '~/design/screens/data/hooks';
+import { fetchCaseFile } from '~/api/hooks';
 import {
   useApprove,
   useConfig,
@@ -34,7 +34,7 @@ import {
   useRetry,
   useTrace,
   useVerify,
-} from '~/design/screens/data/hooks';
+} from '~/api/hooks';
 import { ApiError } from '@resolve/api-client';
 
 export function meta() {

@@ -4,7 +4,7 @@ import type { ResolutionData } from '~/components/resolution-block';
 import type { TraceStepData } from '~/components/trace/trace-step';
 import type { IconKey } from '~/lib/icons';
 import { stepDetails } from '~/lib/step-details';
-import type { DisputeDetail, TraceStepRow } from '~/design/screens/data/types';
+import type { DisputeDetail, TraceStepRow } from '~/api/types';
 
 const TOOL_ICONS: Record<string, IconKey> = {
   getTransaction: 'trace.transaction',
