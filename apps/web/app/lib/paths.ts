@@ -1,9 +1,11 @@
+const BASE = '/design/screens';
+
 export const paths = {
-  login: '/',
-  dashboard: '/dashboard',
-  cases: '/dashboard/cases',
-  case: (id: string) => `/dashboard/cases/${id}`,
-  audit: '/dashboard/audit',
-  team: '/dashboard/team',
-  settings: '/dashboard/settings',
+  login: `${BASE}/login`,
+  dashboard: BASE,
+  cases: `${BASE}/cases`,
+  case: (id: string) => `${BASE}/cases/${id}`,
+  audit: `${BASE}/audit`,
+  team: `${BASE}/team`,
+  settings: `${BASE}/settings`,
 } as const;

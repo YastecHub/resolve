@@ -4,6 +4,7 @@ import { APP_NAME } from '@resolve/shared';
 import { BrandMark, Lockup } from '~/components/brand-mark';
 import { SegmentedControl } from '~/components/ui/segmented-control';
 import { Cards } from '~/design/cards';
+import { ScreensGallery } from '~/design/screens-gallery';
 import { DataViz } from '~/design/dataviz';
 import { Overlays } from '~/design/overlays';
 import { ProductPatterns } from '~/design/product';
@@ -17,6 +18,7 @@ import { StatusAndData } from '~/design/status';
 import { useTheme } from '~/lib/theme';
 
 const NAV = [
+  { id: 'screens', label: 'Screens' },
   { id: 'color', label: 'Color' },
   { id: 'type', label: 'Typography' },
   { id: 'shape', label: 'Radius and spacing' },
@@ -101,6 +103,7 @@ export default function Design() {
             ))}
           </nav>
           <main className="flex min-w-0 flex-1 flex-col gap-16">
+            <ScreensGallery />
             <Foundations />
             <Controls />
             <StatusAndData />

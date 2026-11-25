@@ -22,7 +22,7 @@ export interface CaseRow {
   updatedAt: number;
 }
 
-export type SortKey = 'amount_minor' | 'confidence' | 'sla_due_at' | 'updated_at';
+export type SortKey = 'amountMinor' | 'confidence' | 'slaDueAt' | 'updatedAt';
 
 interface Header {
   label: string;
@@ -34,11 +34,11 @@ const HEADERS: Header[] = [
   { label: 'ID' },
   { label: 'Customer' },
   { label: 'Type' },
-  { label: 'Amount', align: 'right', sort: 'amount_minor' },
+  { label: 'Amount', align: 'right', sort: 'amountMinor' },
   { label: 'Confidence', sort: 'confidence' },
   { label: 'Status' },
-  { label: 'SLA', sort: 'sla_due_at' },
-  { label: 'Updated', align: 'right', sort: 'updated_at' },
+  { label: 'SLA', sort: 'slaDueAt' },
+  { label: 'Updated', align: 'right', sort: 'updatedAt' },
 ];
 
 interface CasesTableProps {
@@ -58,10 +58,10 @@ interface CasesTableProps {
 const OPEN = new Set<DisputeStatus>(['resolved', 'rejected']);
 
 const NATURAL_ORDER: Record<SortKey, 'asc' | 'desc'> = {
-  amount_minor: 'desc',
+  amountMinor: 'desc',
   confidence: 'desc',
-  sla_due_at: 'asc',
-  updated_at: 'desc',
+  slaDueAt: 'asc',
+  updatedAt: 'desc',
 };
 
 export function CasesTable({
