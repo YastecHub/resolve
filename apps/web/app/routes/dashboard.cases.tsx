@@ -18,8 +18,8 @@ import { TablePagination } from '~/components/ui/table-pagination';
 import { TYPE_LABELS } from '~/lib/labels';
 import { paths } from '~/lib/paths';
 import { PAGE_SIZES, useCasesParams, type CasesParams } from '~/lib/use-cases-params';
-import { useDisputes, useMe, useMetrics } from '~/design/screens/data/hooks';
-import type { DisputeListItem } from '~/design/screens/data/types';
+import { useDisputes, useMe, useMetrics } from '~/api/hooks';
+import type { DisputeListItem } from '~/api/types';
 
 export function meta() {
   return [{ title: 'Cases · Resolve' }];

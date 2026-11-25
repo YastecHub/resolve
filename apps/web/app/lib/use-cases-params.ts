@@ -6,7 +6,7 @@ import {
   type ClassifiedType,
   type DisputeStatus,
 } from '@resolve/shared';
-import type { DisputeQuery } from '~/design/screens/data/types';
+import type { DisputeQuery } from '~/api/types';
 
 const SORTS = ['createdAt', 'updatedAt', 'slaDueAt', 'amountMinor', 'confidence'] as const;
 type Sort = (typeof SORTS)[number];
