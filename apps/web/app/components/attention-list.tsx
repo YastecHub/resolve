@@ -5,7 +5,7 @@ import { SlaRing } from '~/components/ui/sla-ring';
 import { StatusPill } from '~/components/ui/status-pill';
 import { TypeBadge } from '~/components/ui/type-badge';
 import { CopyableId } from '~/components/ui/copyable-id';
-import type { DisputeListItem } from '~/design/screens/data/types';
+import type { DisputeListItem } from '~/api/types';
 
 export function AttentionList({ items, now }: { items: readonly DisputeListItem[]; now: number }) {
   return (

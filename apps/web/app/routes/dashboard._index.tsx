@@ -17,7 +17,7 @@ import { SkeletonCard, SkeletonKpiCard } from '~/components/ui/skeleton';
 import { formatSpan, greeting } from '~/lib/format';
 import { paths } from '~/lib/paths';
 import { TYPE_LABELS } from '~/lib/labels';
-import { useDisputes, useMetrics } from '~/design/screens/data/hooks';
+import { useDisputes, useMetrics } from '~/api/hooks';
 
 export function meta() {
   return [{ title: 'Overview · Resolve' }];
