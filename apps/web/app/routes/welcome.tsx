@@ -1,5 +1,6 @@
 import { isApiError, useGetHealth, type HealthReportDto } from '@resolve/api-client';
 import { Link } from 'react-router';
+import { paths } from '~/lib/paths';
 import { AdireBand } from '~/components/adire';
 import { BrandTile, Wordmark } from '~/components/brand-mark';
 import { Button } from '~/components/ui/button';
@@ -20,7 +21,7 @@ function isHealthReport(value: unknown): value is HealthReportDto {
 }
 
 export function meta() {
-  return [{ title: 'Welcome · resolve' }];
+  return [{ title: 'Status · resolve' }];
 }
 
 function formatUptime(seconds: number) {
@@ -160,6 +161,9 @@ export default function Welcome() {
             </Link>
             <Link to="/design#screens" className="underline-offset-4 hover:underline">
               Screens
+            </Link>
+            <Link to={paths.login} className="underline-offset-4 hover:underline">
+              Sign in
             </Link>
           </nav>
         </header>

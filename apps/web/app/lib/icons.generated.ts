@@ -30,16 +30,16 @@ export const iconBundle: IconifyJSON = {
       body: '<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 4v16m10-1V4m-7 3S7.79 4 7 4S4 7 4 7m16 10s-2.21 3-3 3s-3-3-3-3"/>',
     },
     'artificial-intelligence-02': {
-      body: '<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="M15.5 22v-.5c0-1.105.932-2 1.922-2.489c.963-.476 1.772-1.26 1.875-2.18L19.5 15l2-1l-2.5-3.75a8.25 8.25 0 1 0-13 6.746m0 0V22m0-5.004c.75.53 1.594.937 2.5 1.194"/><path d="M11.308 12L9.847 7.479A.72.72 0 0 0 9.154 7a.72.72 0 0 0-.693.479L7 12m7-5v5m-6.462-1.5h3.231"/></g>',
+      body: '<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="M11.25 8.219v2.031m0 0v2.031m0-2.031H9.625m1.625 0h1.625m1.625 0l-1.41-.47a2.17 2.17 0 0 1-1.37-1.37L11.25 7l-.47 1.41a2.17 2.17 0 0 1-1.37 1.37L8 10.25l1.41.47a2.17 2.17 0 0 1 1.37 1.37l.47 1.41l.47-1.41a2.17 2.17 0 0 1 1.37-1.37z"/><path d="M15.5 22v-1.114c0-.67 0-1.006.178-1.263s.492-.374 1.12-.61l.755-.283a3 3 0 0 0 1.947-2.809V14l1.687-.844a.566.566 0 0 0 .238-.787l-1.528-2.674c-.174-.305-.261-.458-.316-.601c-.055-.144-.108-.39-.215-.883C18.59 4.612 15.666 2 11 2c-5 0-8.5 3.5-8.5 8c0 2.07.976 4.379 2.402 5.981C5.53 16.687 6 17.556 6 18.5V22"/></g>',
     },
     'audit-01': {
       body: '<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path stroke-linejoin="round" d="M19 10.5V10c0-3.771 0-5.657-1.172-6.828S14.771 2 11 2S5.343 2 4.172 3.172S3 6.229 3 10v6c0 1.864 0 2.796.304 3.53a4 4 0 0 0 2.165 2.165C6.204 22 7.136 22 9 22"/><path d="M7 7h8m-8 4h4"/><path stroke-linejoin="round" d="M15.283 19.004c-.06-.888-.165-1.838-.601-2.912c-.373-.916-.269-3.071 1.818-3.071s2.166 2.155 1.794 3.07c-.436 1.075-.518 2.025-.576 2.913M21 22h-9v-1.246c0-.446.266-.839.653-.961l2.255-.716q.242-.077.494-.077h2.196q.252 0 .494.077l2.255.716c.387.122.653.515.653.961z"/></g>',
     },
     bank: {
-      body: '<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="M12.125 5.75H12m.25 0a.25.25 0 1 1-.5 0a.25.25 0 0 1 .5 0M5 9v10M9 9v10m6-10v10m4-10v10"/><path d="M21.352 9H2.648a.657.657 0 0 1-.353-1.205l6.435-4.23C10.317 2.522 11.11 2 12 2s1.683.522 3.27 1.565l6.435 4.23A.658.658 0 0 1 21.352 9m-.312 11.293l-.688-.707c-.281-.29-.422-.434-.6-.51c-.18-.076-.378-.076-.776-.076H5.024c-.398 0-.597 0-.775.076c-.18.076-.32.22-.6.51l-.689.707c-.706.726-1.06 1.09-.935 1.398c.124.309.624.309 1.623.309h16.704c1 0 1.5 0 1.623-.309c.125-.308-.229-.672-.935-1.398"/></g>',
+      body: '<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="M12.125 5.75H12m.25 0a.25.25 0 1 1-.5 0a.25.25 0 0 1 .5 0M9 9v10m-4 0V9m14 0v10m-4 0V9"/><path d="M2.648 9h18.704a.658.658 0 0 0 .353-1.205l-6.435-4.23C13.683 2.522 12.89 2 12 2s-1.683.522-3.27 1.565l-6.435 4.23A.657.657 0 0 0 2.648 9m17.704 10.586l.688.707c.706.726 1.06 1.09.935 1.398c-.124.309-.624.309-1.623.309H3.648c-1 0-1.5 0-1.623-.309c-.125-.308.229-.672.935-1.398l.688-.707c.281-.29.422-.434.6-.51c.18-.076.378-.076.776-.076h13.952c.398 0 .597 0 .775.076c.18.076.32.22.6.51"/></g>',
     },
     'cancel-01': {
-      body: '<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18 6L6 18m12 0L6 6"/>',
+      body: '<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 19L5 5.001M19 5L5 18.999"/>',
     },
     'checkmark-circle-02': {
       body: '<g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12s4.477 10 10 10s10-4.477 10-10Z"/><path stroke-linecap="round" stroke-linejoin="round" d="m8 12.5l2.5 2.5L16 9"/></g>',
@@ -48,7 +48,7 @@ export const iconBundle: IconifyJSON = {
       body: '<g fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l2 2"/></g>',
     },
     'cloud-server': {
-      body: '<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.478 8h.022a4.5 4.5 0 1 1 0 9H7a5 5 0 0 1-.48-9.977M17.478 8q.021-.247.022-.5a5.5 5.5 0 0 0-10.98-.477M17.478 8a5.5 5.5 0 0 1-1.235 3M6.52 7.023Q6.757 7 7 7c1.126 0 2.165.372 3 1m4 12.75v-.25a1 1 0 0 0-1-1h-1m2 1.25V21a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-.25m4 0h5m-9 0v-.25a1 1 0 0 1 1-1h1m-2 1.25H5m7-1.25V17"/>',
+      body: '<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 2.5a6 6 0 0 1 6 6c0 .552.455.987.99 1.123A4.002 4.002 0 0 1 18 17.5H7a5 5 0 0 1-1.616-9.733a1.3 1.3 0 0 0 .833-.873A6 6 0 0 1 12 2.5m0 15v4m0 0H6m6 0h6"/>',
     },
     computer: {
       body: '<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14 21h2m-2 0a1.5 1.5 0 0 1-1.5-1.5V17H12m2 4h-4m0 0H8m2 0a1.5 1.5 0 0 0 1.5-1.5V17h.5m0 0v4m4-18H8c-2.828 0-4.243 0-5.121.879C2 4.757 2 6.172 2 9v2c0 2.828 0 4.243.879 5.121C3.757 17 5.172 17 8 17h8c2.828 0 4.243 0 5.121-.879C22 15.243 22 13.828 22 11V9c0-2.828 0-4.243-.879-5.121C20.243 3 18.828 3 16 3"/>',
@@ -69,7 +69,7 @@ export const iconBundle: IconifyJSON = {
       body: '<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.857 12.506C6.37 10.646 4.596 8.6 3.627 7.45c-.3-.356-.398-.617-.457-1.076c-.202-1.572-.303-2.358.158-2.866S4.604 3 6.234 3h11.532c1.63 0 2.445 0 2.906.507c.461.508.36 1.294.158 2.866c-.06.459-.158.72-.457 1.076c-.97 1.152-2.747 3.202-5.24 5.065a1.05 1.05 0 0 0-.402.747c-.247 2.731-.475 4.227-.617 4.983c-.229 1.222-1.96 1.957-2.888 2.612c-.552.39-1.222-.074-1.293-.678a196 196 0 0 1-.674-6.917a1.05 1.05 0 0 0-.402-.755"/>',
     },
     'folder-01': {
-      body: '<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M8 7h8.75c2.107 0 3.16 0 3.917.506a3 3 0 0 1 .827.827C22 9.09 22 10.143 22 12.25c0 3.511 0 5.267-.843 6.528a5 5 0 0 1-1.38 1.38C18.518 21 16.762 21 13.25 21H12c-4.714 0-7.071 0-8.536-1.465C2 18.072 2 15.715 2 11V7.944c0-1.816 0-2.724.38-3.406A3 3 0 0 1 3.538 3.38C4.22 3 5.128 3 6.944 3C8.108 3 8.69 3 9.2 3.191c1.163.436 1.643 1.493 2.168 2.542L12 7"/>',
+      body: '<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.666 6.494H16c2.828 0 4.243 0 5.121.88c.879.878.879 2.292.879 5.12V14.5c0 2.828 0 4.243-.879 5.121c-.878.879-2.293.879-5.121.879H8c-2.828 0-4.243 0-5.121-.879C2 18.743 2 17.328 2 14.5V8.992c0-2.338 0-3.507.616-4.313a3 3 0 0 1 .563-.563C3.985 3.5 5.154 3.5 7.492 3.5c.674 0 1.012 0 1.322.104q.125.043.245.101c.293.145.533.382 1.012.857l.777.772c.577.573.866.859 1.232 1.01c.366.15.772.15 1.586.15"/>',
     },
     'help-circle': {
       body: '<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.912 2.064C12.728 12.032 12 12.672 12 13.5m.125 3.25H12m.25 0a.25.25 0 1 1-.5 0a.25.25 0 0 1 .5 0"/></g>',

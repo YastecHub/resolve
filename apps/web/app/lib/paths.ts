@@ -1,5 +1,6 @@
 export const paths = {
-  login: '/login',
+  login: '/',
+  status: '/status',
   dashboard: '/dashboard',
   cases: '/dashboard/cases',
   case: (id: string) => `/dashboard/cases/${id}`,
