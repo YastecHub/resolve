@@ -4,7 +4,7 @@ The build plan for the hackathon, in order. Each task is one pull request. Pick 
 
 Owners: **R** Ridwanullah (web), **Y** Yasir (api), **O** Oluwadarasimi (agent, AI, infrastructure).
 
-Status: `[x]` done, `[ ]` open.
+Status: `[x]` done, `[ ]` open. The dashboard screens (T10–T13) are built and being connected to the API.
 
 ---
 
@@ -23,7 +23,7 @@ Status: `[x]` done, `[ ]` open.
 
 ## Phase 1 · Data and intake
 
-### T1 · Database schema and migrations · Y
+### [x] T1 · Database schema and migrations · Y
 
 - Add Prisma (`prisma`, `@prisma/client`, Postgres adapter) to `apps/api`; `prisma.config.ts` reads `DATABASE_URL`.
 - Model every table in ARCHITECTURE.md → Data model. Money columns are `BigInt` kobo. IDs are prefixed strings (`dsp_`, `txn_`, `inv_`, `stp_`, `usr_`).
@@ -33,21 +33,21 @@ Status: `[x]` done, `[ ]` open.
 - Run `prisma migrate deploy` on container start.
 - **Done when:** `docker compose up` creates the schema from migrations on an empty volume.
 
-### T2 · Synthetic bank and demo cases · Y (needs T1)
+### [x] T2 · Synthetic bank and demo cases · Y (needs T1)
 
 - Seeded, deterministic generator: 40 customers, 12 merchants (2 flagged), ~320 transactions, 1–3 devices per customer, Nigerian-style names and cities only.
 - 40 demo cases, 8 per scenario (RESOLVE.md §5 and the scenario table in the old spec): failed transfer, duplicate charge, unauthorised, merchant non-delivery, legitimate. Each stores the expected classification and disposition.
 - `pnpm --filter api db:seed`.
 - **Done when:** seed runs twice with the same output; unit tests check scenario invariants (failed transfers have a debit and no credit, duplicates fall inside the window).
 
-### T3 · Dispute intake and listing · Y (needs T1)
+### [x] T3 · Dispute intake and listing · Y (needs T1)
 
 - Implement `POST /disputes`, `GET /disputes`, `GET /disputes/:id` behind the existing DTOs.
 - 404 for unknown transaction, 409 `conflict` for a second open dispute, amount copied from the transaction, `slaDueAt = createdAt + 72h`.
 - List filters: `status[]`, `type[]`, `q`, sort by `createdAt`, `slaDueAt`, `amountMinor`; paged.
 - **Done when:** e2e tests cover 201, 400, 404, 409 and paging.
 
-### T4 · Investigation queue · Y + O (needs T3)
+### [x] T4 · Investigation queue · Y + O (needs T3)
 
 - `@nestjs/bullmq` with the existing Redis. Queue `investigations`, job ID = dispute ID.
 - Worker: status guard (skip if not `queued`/`investigating`), new investigation attempt, call the agent (stub until T6), set final status.
@@ -58,34 +58,34 @@ Status: `[x]` done, `[ ]` open.
 
 ## Phase 2 · The agent
 
-### T5 · Provider adapter and profiles · O
+### [x] T5 · Provider adapter and profiles · O
 
 - One OpenAI-compatible adapter in `src/ai/` using `fetch`: tools, `tool_choice`, 60 s timeout, retries on 429/5xx/network, tolerant tool-argument parsing.
 - Profiles from config (hosted and on-premise); `POST /config/ai-profiles/:name/test`.
 - **Done when:** unit tests with mocked `fetch` cover success, tool call parsing, malformed arguments, 429 retry and timeout.
 
-### T6 · Tools and audit writer · O (needs T1, T2)
+### [x] T6 · Tools and audit writer · O (needs T1, T2)
 
 - The eight read tools (RESOLVE.md §6) with validated params, masking, 20-row lists and 4 KB output cap. Merchant and counterparty names wrapped in `<untrusted>`.
 - Audit writer: `appendStep`, SHA-256 chain over canonical JSON, `verifyChain`.
 - Test that fails if app code issues `UPDATE`/`DELETE` on audit tables.
 - **Done when:** every tool has a test against the seed; the chain test detects a tampered step.
 
-### T7 · Agent loop and decision · O (needs T5, T6)
+### [x] T7 · Agent loop and decision · O (needs T5, T6)
 
 - Prompt (role, process, classification guide, confidence caps, evidence rule, untrusted rule, customer-message rules).
 - Bounded loop: 8 turns, one repair, one nudge, forced decision, fallback escalation.
 - `submit_decision` schema in Zod; evidence validator.
 - **Done when:** loop tests with a scripted fake model cover happy path, repair, nudge, step limit and provider error.
 
-### T8 · Policy engine and executor · O + Y (needs T7)
+### [x] T8 · Policy engine and executor · O + Y (needs T7)
 
 - Pure `applyPolicy` with the 11 rules and config defaults (RESOLVE.md §7). One test per rule plus combinations.
 - Executor: `reverse_debit`, `refund_duplicate`, `none` in one transaction, idempotent.
 - Case file written to the case-files volume.
 - **Done when:** an auto-eligible demo case resolves end to end and a fraud case lands in `awaiting_review` with reasons.
 
-### T9 · Trace, verify and analyst actions · Y (needs T8)
+### [x] T9 · Trace, verify and analyst actions · Y (needs T8)
 
 - `GET /disputes/:id/trace?afterSeq=`, `GET /disputes/:id/verify`, `GET /disputes/:id/case-file`.
 - `POST /approve`, `/override` (reason ≥ 10 chars), `/escalate`, `PATCH /message`, with state checks (409 `invalid_state`).
