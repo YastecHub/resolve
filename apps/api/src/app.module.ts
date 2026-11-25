@@ -3,10 +3,12 @@ import { AuthModule } from './auth/auth.module.js';
 import { DisputesModule } from './disputes/disputes.module.js';
 import { HealthModule } from './health/health.module.js';
 import { InfraModule } from './infra/infra.module.js';
+import { SettingsModule } from './settings/settings.module.js';
 
 @Module({
   imports: [
     InfraModule,
+    SettingsModule,
     AuthModule,
     HealthModule,
     DisputesModule,

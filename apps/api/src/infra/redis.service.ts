@@ -10,10 +10,14 @@ export class RedisService implements OnModuleDestroy {
     connectTimeout: 2_000,
   });
 
-  async ping(): Promise<void> {
+  async ensureConnected(): Promise<void> {
     if (this.client.status === 'wait' || this.client.status === 'end') {
       await this.client.connect();
     }
+  }
+
+  async ping(): Promise<void> {
+    await this.ensureConnected();
     await this.client.ping();
   }
 

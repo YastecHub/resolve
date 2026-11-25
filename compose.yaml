@@ -43,6 +43,9 @@ services:
       ADMIN_EMAIL: ${ADMIN_EMAIL:-}
       ADMIN_STAFF_ID: ${ADMIN_STAFF_ID:-}
       ADMIN_NAME: ${ADMIN_NAME:-}
+      AI_PROFILES: ${AI_PROFILES:-[]}
+      AI_ACTIVE_PROFILE: ${AI_ACTIVE_PROFILE:-hosted}
+      AI_KEY_HOSTED: ${AI_KEY_HOSTED:-}
     ports:
       - '${BIND_HOST:-127.0.0.1}:${API_PORT:-9000}:9000'
     depends_on:
