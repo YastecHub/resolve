@@ -11,8 +11,12 @@ export class ResponseEnvelopeInterceptor implements NestInterceptor {
       map((body: unknown) => {
         const meta = requestMeta(req);
         if (isPaginated(body)) {
-          const { items, page, pageSize, total } = body;
-          return { success: true, data: items, meta: { ...meta, page, pageSize, total } };
+          const { items, page, pageSize, total, extraMeta } = body;
+          return {
+            success: true,
+            data: items,
+            meta: { ...extraMeta, ...meta, page, pageSize, total },
+          };
         }
         return { success: true, data: body ?? null, meta };
       }),
