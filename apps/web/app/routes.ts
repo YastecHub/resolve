@@ -2,6 +2,11 @@ import { type RouteConfig, index, route } from '@react-router/dev/routes';
 
 export default [
   index('routes/welcome.tsx'),
+  route('login', 'routes/login.tsx'),
+  route('dashboard', 'routes/dashboard.tsx', [
+    index('routes/dashboard._index.tsx'),
+    route('*', 'routes/dashboard.not-found.tsx'),
+  ]),
   route('design', 'routes/design.tsx'),
   route('design/screens/login', 'design/screens/login.tsx'),
   route('design/screens', 'design/screens/shell.tsx', [
