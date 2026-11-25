@@ -64,9 +64,17 @@ cd resolve
 ### Run the whole stack
 
 ```
-cp .env.example .env      # optional: change the database password
+cp .env.example .env      # set AUTH_SECRET and an AI key; see Environment
 docker compose up -d --build
 ```
+
+The API applies database migrations on start. Load the synthetic bank and demo cases once:
+
+```
+docker compose exec api node dist/seed/run.js
+```
+
+Sign in at http://localhost:5175/login with the admin from `.env` (`ADMIN_STAFF_ID`, default `100001`).
 
 | What               | Where                               |
 | ------------------ | ----------------------------------- |
@@ -88,28 +96,50 @@ pnpm --filter web dev      # http://localhost:5175, proxies /api to :9000
 
 To reach Postgres and Redis from your machine during development, publish their ports with a `compose.override.yaml`.
 
-| Command                      | What it does                                                     |
-| ---------------------------- | ---------------------------------------------------------------- |
-| `pnpm dev`                   | Run every workspace in development                               |
-| `pnpm build`                 | Build every workspace                                            |
-| `pnpm typecheck`             | Type-check every workspace                                       |
-| `pnpm lint`                  | ESLint across the repo                                           |
-| `pnpm test`                  | Unit tests                                                       |
-| `pnpm --filter api test:e2e` | API end-to-end tests                                             |
-| `pnpm api:generate`          | Export the OpenAPI document and regenerate `packages/api-client` |
-| `pnpm format`                | Format everything with Prettier                                  |
+| Command                        | What it does                                                     |
+| ------------------------------ | ---------------------------------------------------------------- |
+| `pnpm dev`                     | Run every workspace in development                               |
+| `pnpm build`                   | Build every workspace                                            |
+| `pnpm typecheck`               | Type-check every workspace                                       |
+| `pnpm lint`                    | ESLint across the repo                                           |
+| `pnpm test`                    | Unit tests                                                       |
+| `pnpm --filter api test:e2e`   | API end-to-end tests                                             |
+| `pnpm api:generate`            | Export the OpenAPI document and regenerate `packages/api-client` |
+| `pnpm --filter api db:migrate` | Create and apply a migration in development (Prisma)             |
+| `pnpm --filter api db:deploy`  | Apply pending migrations                                         |
+| `pnpm --filter api db:seed`    | Load the synthetic bank, demo cases and the first admin          |
+| `pnpm format`                  | Format everything with Prettier                                  |
 
 ### Environment
 
-| Variable                                            | Default        | Used by                                              |
-| --------------------------------------------------- | -------------- | ---------------------------------------------------- |
-| `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` | `resolve`      | Compose: database credentials                        |
-| `BIND_HOST`                                         | `127.0.0.1`    | Compose: address the API and dashboard listen on     |
-| `API_PORT`                                          | `9000`         | Compose: host port for the API                       |
-| `WEB_PORT`                                          | `5175`         | Compose: host port for the dashboard                 |
-| `APP_VERSION`                                       | `dev`          | Shown in the health report; CI sets it to the commit |
-| `DATABASE_URL`, `REDIS_URL`                         | set by Compose | API                                                  |
-| `PORT`                                              | `9000`         | API                                                  |
+| Variable                                            | Default                                         | Used by                                                                                              |
+| --------------------------------------------------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` | `resolve`                                       | Compose: database credentials                                                                        |
+| `BIND_HOST`                                         | `127.0.0.1`                                     | Compose: address the API and dashboard listen on                                                     |
+| `API_PORT`                                          | `9000`                                          | Compose: host port for the API                                                                       |
+| `WEB_PORT`                                          | `5175`                                          | Compose: host port for the dashboard                                                                 |
+| `APP_VERSION`                                       | `dev`                                           | Shown in the health report; CI sets it to the commit                                                 |
+| `DATABASE_URL`, `REDIS_URL`                         | set by Compose                                  | API                                                                                                  |
+| `PORT`                                              | `9000`                                          | API                                                                                                  |
+| `AUTH_SECRET`                                       | none (required)                                 | API: signs sign-in tokens. Generate with `openssl rand -hex 32`                                      |
+| `ADMIN_EMAIL`, `ADMIN_STAFF_ID`, `ADMIN_NAME`       | `admin@bank.example`, `100001`, `Administrator` | API: the first admin, created when nobody can sign in yet                                            |
+| `AI_PROFILES`                                       | `[]`                                            | API: the AI models the agent can use (JSON array, below)                                             |
+| `AI_ACTIVE_PROFILE`                                 | `hosted`                                        | API: the profile used until an admin picks another in Settings                                       |
+| `AI_KEY_<NAME>`                                     | none                                            | API: the key for each profile; `<NAME>` is the profile name in upper case with dashes as underscores |
+| `CASE_FILES_DIR`                                    | `/data/case-files`                              | API: where case files are written (a Docker volume)                                                  |
+
+### AI models
+
+Any OpenAI-compatible chat endpoint with tool calling works. Each profile names a base URL and a model; its key goes in `AI_KEY_<NAME>`. For example, Gemini and Cloudflare Workers AI side by side:
+
+```
+AI_PROFILES='[{"name":"gemini","label":"Gemini 3 Flash","kind":"hosted","baseUrl":"https://generativelanguage.googleapis.com/v1beta/openai","model":"gemini-3-flash-preview"},{"name":"cloudflare","label":"Workers AI","kind":"hosted","baseUrl":"https://api.cloudflare.com/client/v4/accounts/<account-id>/ai/v1","model":"@cf/meta/llama-3.3-70b-instruct-fp8-fast"}]'
+AI_ACTIVE_PROFILE=gemini
+AI_KEY_GEMINI=…
+AI_KEY_CLOUDFLARE=…
+```
+
+Admins switch between profiles and test each connection on the Settings page. An on-premise model (Ollama or vLLM) is the same shape with `"kind":"onprem"`.
 
 ### Deployment
 
