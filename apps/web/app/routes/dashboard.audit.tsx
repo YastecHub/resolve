@@ -130,6 +130,7 @@ const ACCESS_LABELS: Record<AccessAction, string> = {
   suspended: 'Suspended',
   reinstated: 'Reinstated',
   first_sign_in: 'Signed in for the first time',
+  demo_reset: 'Reset the demo data',
 };
 
 export default function Audit() {
