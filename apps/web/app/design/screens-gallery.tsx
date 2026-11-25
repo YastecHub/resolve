@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 import { AppIcon } from '~/components/app-icon';
 import { LIVE_DISPUTE_ID, REVIEW_DISPUTE_ID } from '~/design/screens/data/sample-server';
-import { paths } from '~/lib/paths';
+import { paths } from '~/design/screens/lib/paths';
 import { DesignSection } from './specimen';
 
 interface ScreenTile {
