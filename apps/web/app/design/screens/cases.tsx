@@ -16,7 +16,7 @@ import { SkeletonTableRows } from '~/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import { TablePagination } from '~/components/ui/table-pagination';
 import { TYPE_LABELS } from '~/lib/labels';
-import { paths } from '~/lib/paths';
+import { paths } from '~/design/screens/lib/paths';
 import {
   PAGE_SIZES,
   useCasesParams,

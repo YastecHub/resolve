@@ -10,7 +10,7 @@ import { BrandTile } from '~/components/brand-mark';
 import { Banner } from '~/components/ui/banner';
 import { Button } from '~/components/ui/button';
 import { Field, Input } from '~/components/ui/field';
-import { paths } from '~/lib/paths';
+import { paths } from '~/design/screens/lib/paths';
 import { STAFF_SIGN_IN } from '~/design/screens/lib/staff-sign-in';
 import { queryClient } from '~/lib/query-client';
 import { clearDevUser, getDevUser, setDevUser } from '~/design/screens/lib/session';

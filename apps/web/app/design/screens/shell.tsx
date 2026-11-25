@@ -16,7 +16,7 @@ import { Sidebar, type SidebarItem } from '~/components/shell/sidebar';
 import type { ProviderTestResult } from '~/components/provider-pill';
 import { Topbar } from '~/components/shell/topbar';
 import { ErrorCard } from '~/components/ui/error-card';
-import { paths } from '~/lib/paths';
+import { paths } from '~/design/screens/lib/paths';
 import { STAFF_SIGN_IN } from '~/design/screens/lib/staff-sign-in';
 import { useMediaQuery } from '~/lib/use-media-query';
 import { useTheme } from '~/lib/theme';

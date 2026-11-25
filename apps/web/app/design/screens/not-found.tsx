@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 import { AdireBand } from '~/components/adire';
 import { AppIcon } from '~/components/app-icon';
-import { paths } from '~/lib/paths';
+import { paths } from '~/design/screens/lib/paths';
 
 export function meta() {
   return [{ title: 'Page not found · Resolve' }];

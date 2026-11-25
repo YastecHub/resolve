@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 import { buttonStyles } from '~/components/ui/button';
 import { EmptyState } from '~/components/ui/empty-state';
-import { paths } from '~/lib/paths';
+import { paths } from '~/design/screens/lib/paths';
 
 export function NotPermitted({ what }: { what: string }) {
   return (

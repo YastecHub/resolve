@@ -25,7 +25,7 @@ import {
   toDecisionData,
   toResolution,
 } from '~/design/screens/lib/case-view';
-import { paths } from '~/lib/paths';
+import { paths } from '~/design/screens/lib/paths';
 import { useMediaQuery } from '~/lib/use-media-query';
 import { usePermissions } from '~/design/screens/lib/use-permissions';
 import { fetchCaseFile } from '~/design/screens/data/hooks';

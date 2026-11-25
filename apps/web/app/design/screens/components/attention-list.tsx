@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { paths } from '~/lib/paths';
+import { paths } from '~/design/screens/lib/paths';
 import { Money } from '~/components/ui/money';
 import { SlaRing } from '~/components/ui/sla-ring';
 import { StatusPill } from '~/components/ui/status-pill';

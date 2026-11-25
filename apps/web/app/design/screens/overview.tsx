@@ -15,7 +15,7 @@ import { PageHeader } from '~/components/ui/page-header';
 import { SectionCard } from '~/components/ui/section-card';
 import { SkeletonCard, SkeletonKpiCard } from '~/components/ui/skeleton';
 import { formatSpan, greeting } from '~/lib/format';
-import { paths } from '~/lib/paths';
+import { paths } from '~/design/screens/lib/paths';
 import { TYPE_LABELS } from '~/lib/labels';
 import { useDisputes, useMetrics } from '~/design/screens/data/hooks';
 

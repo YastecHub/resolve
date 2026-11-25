@@ -13,7 +13,7 @@ import { TablePagination } from '~/components/ui/table-pagination';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import { formatDurationMs, shortId } from '~/lib/format';
 import { ANALYST_ACTION_LABELS } from '~/lib/labels';
-import { paths } from '~/lib/paths';
+import { paths } from '~/design/screens/lib/paths';
 import { cn } from '~/lib/cn';
 import { fetchCaseFile, fetchVerify } from '~/design/screens/data/hooks';
 import { useAccessEvents, useAnalystActions, useInvestigations } from '~/design/screens/data/hooks';
