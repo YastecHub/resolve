@@ -46,6 +46,9 @@ services:
       AI_PROFILES: ${AI_PROFILES:-[]}
       AI_ACTIVE_PROFILE: ${AI_ACTIVE_PROFILE:-hosted}
       AI_KEY_HOSTED: ${AI_KEY_HOSTED:-}
+      CASE_FILES_DIR: /data/case-files
+    volumes:
+      - case-files:/data/case-files
     ports:
       - '${BIND_HOST:-127.0.0.1}:${API_PORT:-9000}:9000'
     depends_on:
@@ -67,3 +70,4 @@ services:
 volumes:
   postgres-data:
   redis-data:
+  case-files:
